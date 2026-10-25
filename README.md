@@ -38,6 +38,7 @@ primordia/
 ├── .gitignore                <- transient AIKit state and Python caches excluded
 ├── LICENSE                   <- AGPLv3 Open Source License
 ├── README.md
+├── COMMERCIAL.md
 ├── pyproject.toml            <- build, package configuration and the `primordia` script
 ├── primordia/                <- core package
 │   ├── __init__.py           <- package metadata
