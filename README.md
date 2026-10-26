@@ -1,6 +1,6 @@
 # primordia
 
-[![Built with AIKit](https://img.shields.io/badge/built%20with-AIKit-6f42c1)](https://github.com/Aegean-E/AIKit)
+[![Built with AIKit](https://img.shields.io/badge/built%20with-AIKit-6f42c1)](https://github.com/AegeanWorks/AIKit)
 
 Primordia is a zero-dependency evolution sandbox: seed a biosphere, run its clock, and watch
 genomes vary, compete and speciate. A run replays exactly from its seed, and a fossil record
@@ -36,7 +36,9 @@ keeps the story of what happened.
 primordia/
 ├── .aikit/                   <- project memory: record, ledger, decisions, map
 ├── .gitignore                <- transient AIKit state and Python caches excluded
-├── LICENSE                   <- AGPLv3 Open Source License
+├── LICENSE                   <- Aegean License 1.1 (AL-1.1): free personal use
+├── LICENSES/                 <- REUSE license texts
+├── REUSE.toml                <- Machine-readable SPDX metadata
 ├── README.md
 ├── COMMERCIAL.md
 ├── pyproject.toml            <- build, package configuration and the `primordia` script
@@ -226,6 +228,8 @@ live neighbour bookkeeping, staged grazing and hunting mechanics, armored-defens
 a drift-to-speciation run, a blocked direct step that never sidesteps, integer-energy and
 custom-threshold round trips, typed shock inputs, refused snapshot dates and a performance smoke test.
 
+> **License history:** versions up to and including `v1.0.6-agpl` remain available under GNU AGPL-3.0.
+
 ## 📜 License
 
-AGPLv3 - see [LICENSE](LICENSE).
+Free for personal use under the Aegean License 1.1 (AL-1.1); see [LICENSE](LICENSE). Any commercial use needs the Aegean Commercial License 1.0 (ACL-1.0); see [COMMERCIAL.md](COMMERCIAL.md).

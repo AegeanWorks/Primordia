@@ -324,3 +324,9 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
   unchanged. A zero threshold remains an accepted (if degenerate) configuration where every
   creature is its own founder; the loader's contract is untouched. 1 new test brings the unit
   suite tally from 150 to 151 tests.
+
+## Licensing migration (v1.0.6-agpl)
+
+- New versions use the Aegean License 1.1 (AL-1.1); versions up to and including `v1.0.6-agpl` remain under GNU AGPL-3.0.
+- Rights holder: AegeanWorks; commercial use under ACL-1.0.
+- Counsel review of the 1.1 texts remains pending.
