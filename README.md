@@ -228,8 +228,6 @@ live neighbour bookkeeping, staged grazing and hunting mechanics, armored-defens
 a drift-to-speciation run, a blocked direct step that never sidesteps, integer-energy and
 custom-threshold round trips, typed shock inputs, refused snapshot dates and a performance smoke test.
 
-> **License history:** versions up to and including `v1.0.6-agpl` remain available under GNU AGPL-3.0.
-
 ## 📜 License
 
 Free for personal use under the Aegean License 1.1 (AL-1.1); see [LICENSE](LICENSE). Any commercial use needs the Aegean Commercial License 1.0 (ACL-1.0); see [COMMERCIAL.md](COMMERCIAL.md).
