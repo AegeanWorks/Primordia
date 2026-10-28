@@ -2,6 +2,7 @@
 
 <!-- aegean:media:start -->
 <p align="center"><img src="assets/logo.jpg" alt="Primordia logo" width="96" height="96"></p>
+<p align="center"><img src="assets/social-preview.png" alt="Primordia social preview" width="100%"></p>
 <!-- aegean:media:end -->
 
 [![Built with AIKit](https://img.shields.io/badge/built%20with-AIKit-6f42c1)](https://github.com/AegeanWorks/AIKit)

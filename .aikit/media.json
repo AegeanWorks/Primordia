@@ -24,15 +24,22 @@
         "method": "vision",
         "notes": "Primordia SIMULATION none",
         "score": 95,
-        "reviewed_at": "2026-10-28T17:30:34"
+        "reviewed_at": "2026-10-28T17:52:10"
       }
     },
     "social_preview": {
-      "path": "assets/social-preview.jpg",
-      "status": "pending_review",
+      "path": "assets/social-preview.png",
+      "status": "approved",
       "commit": "",
-      "generated_at": "2026-10-28T16:35:58",
-      "review": null
+      "generated_at": "2026-10-28T17:41:08",
+      "review": {
+        "status": "approved",
+        "reviewer": "subagent:vision-review",
+        "method": "vision",
+        "notes": "Primordia\\nSIMULATION",
+        "score": 95,
+        "reviewed_at": "2026-10-28T17:52:10"
+      }
     }
   },
   "screenshots": [],
