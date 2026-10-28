@@ -14,40 +14,27 @@
   "layout": "wave",
   "assets": {
     "logo": {
-      "path": "assets/logo.png",
+      "path": "assets/logo.jpg",
       "status": "approved",
       "commit": "",
-      "generated_at": "2026-10-28T13:53:42",
+      "generated_at": "2026-10-28T17:02:22",
       "review": {
         "status": "approved",
-        "reviewer": "subagent:brand-review",
+        "reviewer": "subagent:vision-review",
         "method": "vision",
-        "notes": "PM monogram distinct from prism-relay's PR; segmented ring with green glowing core suggests an artificial-life environment; SIMULATION category clean; Primordia spelled correctly; no clipping.",
-        "score": 89,
-        "reviewed_at": "2026-10-28T14:00:01"
+        "notes": "Primordia SIMULATION none",
+        "score": 95,
+        "reviewed_at": "2026-10-28T17:30:34"
       }
     },
     "social_preview": {
-      "path": "assets/social-preview.png",
-      "status": "approved",
-      "commit": "",
-      "generated_at": "2026-10-28T13:53:42",
-      "review": {
-        "status": "approved",
-        "reviewer": "subagent:brand-review",
-        "method": "vision",
-        "notes": "Artificial-life evolution simulation CLI card; tagline 'Grow artificial life from mutation and selection.' Clean layout, no clipping; chips (artificial life, cli, evolution simulation) legible; generator-ring image fits synthetic life theme.",
-        "score": 92,
-        "reviewed_at": "2026-10-28T14:00:01"
-      }
-    },
-    "artwork": {
-      "path": "assets/artwork.jpg",
+      "path": "assets/social-preview.jpg",
       "status": "pending_review",
       "commit": "",
-      "generated_at": "2026-10-28T13:34:32",
+      "generated_at": "2026-10-28T16:35:58",
       "review": null
     }
   },
-  "screenshots": []
+  "screenshots": [],
+  "model": "community/scriptsnsenses-sys/flux-2-dev-free"
 }
