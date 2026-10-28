@@ -14,46 +14,39 @@
   "layout": "wave",
   "assets": {
     "logo": {
-      "path": "assets/logo.svg",
+      "path": "assets/logo.png",
       "status": "approved",
       "commit": "",
-      "generated_at": "2026-10-28T08:52:26",
+      "generated_at": "2026-10-28T11:43:49",
       "review": {
         "status": "approved",
         "reviewer": "subagent:vision-review",
         "method": "vision",
-        "notes": "PR sprout, unique",
-        "score": 89,
-        "reviewed_at": "2026-10-28T08:58:21"
+        "notes": "Monogram PR matches project; legible, unclipped, no overlaps/watermark, premium.",
+        "score": 91,
+        "reviewed_at": "2026-10-28T11:49:30"
       }
     },
     "social_preview": {
-      "path": "assets/social-preview.svg",
+      "path": "assets/social-preview.png",
       "status": "approved",
       "commit": "",
-      "generated_at": "2026-10-28T08:52:26",
+      "generated_at": "2026-10-28T11:43:49",
       "review": {
         "status": "approved",
         "reviewer": "subagent:vision-review",
         "method": "vision",
-        "notes": "Consistent template, legible",
-        "score": 89,
-        "reviewed_at": "2026-10-28T08:58:21"
+        "notes": "Strong hierarchy; legible, unclipped; premium card, no watermark.",
+        "score": 90,
+        "reviewed_at": "2026-10-28T11:49:30"
       }
     },
-    "social_preview_png": {
-      "path": "assets/social-preview.png",
-      "status": "approved",
+    "artwork": {
+      "path": "assets/artwork.jpg",
+      "status": "pending_review",
       "commit": "",
-      "generated_at": "2026-10-28T08:52:27",
-      "review": {
-        "status": "approved",
-        "reviewer": "subagent:vision-review",
-        "method": "structural",
-        "notes": "Rendered from the approved 1280x640 social SVG; exact dimensions verified.",
-        "score": null,
-        "reviewed_at": "2026-10-28T09:02:55"
-      }
+      "generated_at": "2026-10-28T11:43:49",
+      "review": null
     }
   },
   "screenshots": []
