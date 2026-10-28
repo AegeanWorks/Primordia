@@ -13,6 +13,9 @@
   "ui_source": "detected",
   "topics": [
     "aikit",
+    "source-available",
+    "aegean-license",
+    "commercial-license",
     "artificial-life",
     "cli",
     "evolution-simulation",
@@ -22,16 +25,13 @@
     "speciation",
     "zero-dependency",
     "web-observatory",
-    "source-available",
     "aegeanworks",
     "biology",
     "command-line-tool",
     "complex-systems",
-    "software",
-    "evolutionary-algorithm",
-    "genetic-algorithm",
     "ecosystem-simulation",
-    "zero-dependencies"
+    "evolutionary-algorithm",
+    "genetic-algorithm"
   ],
   "topics_source": "ai:kilo:2026-10-27",
   "topics_reviewed_at": "2026-10-28",
@@ -61,5 +61,10 @@
     "genetic-algorithm",
     "ecosystem-simulation",
     "zero-dependencies"
+  ],
+  "license_topics": [
+    "source-available",
+    "aegean-license",
+    "commercial-license"
   ]
 }

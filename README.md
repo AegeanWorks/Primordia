@@ -2,7 +2,6 @@
 
 <!-- aegean:media:start -->
 <p align="center"><img src="assets/social-preview.png" alt="Primordia social preview" width="100%"></p>
-*The banner and logo are AI-generated brand assets. They are illustrative and may not literally depict every feature or the full project scope.*
 <!-- aegean:media:end -->
 
 [![Built with AIKit](https://img.shields.io/badge/built%20with-AIKit-6f42c1)](https://github.com/AegeanWorks/AIKit)
@@ -232,6 +231,12 @@ and time-series trend SVG charts for the observatory; byte-identical replays of 
 live neighbour bookkeeping, staged grazing and hunting mechanics, armored-defense arithmetic,
 a drift-to-speciation run, a blocked direct step that never sidesteps, integer-energy and
 custom-threshold round trips, typed shock inputs, refused snapshot dates and a performance smoke test.
+
+<!-- aegean:brand-assets:start -->
+## 🎨 Brand Assets
+
+> **AI-Generated Brand Artwork.** The banner and logo are **AI-generated brand assets**. They are illustrative and may not literally depict every feature or the full project scope.
+<!-- aegean:brand-assets:end -->
 
 ## 📜 License
 
