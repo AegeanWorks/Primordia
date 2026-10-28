@@ -1,5 +1,10 @@
 # primordia
 
+<!-- aegean:media:start -->
+<p align="center"><img src="assets/logo.svg" alt="Primordia logo" width="96" height="96"></p>
+<p align="center"><img src="assets/social-preview.svg" alt="Primordia social preview" width="100%"></p>
+<!-- aegean:media:end -->
+
 [![Built with AIKit](https://img.shields.io/badge/built%20with-AIKit-6f42c1)](https://github.com/AegeanWorks/AIKit)
 
 Primordia is a zero-dependency evolution sandbox: seed a biosphere, run its clock, and watch

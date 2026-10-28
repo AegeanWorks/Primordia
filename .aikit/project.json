@@ -3,5 +3,63 @@
   "name": "primordia",
   "test_command": null,
   "gates": {},
-  "created": "2026-10-18"
+  "created": "2026-10-18",
+  "has_ui": false,
+  "ui_kind": "cli",
+  "ui_evidence": [
+    "primordia/cli.py"
+  ],
+  "ui_checked_at": "2026-10-28",
+  "ui_source": "detected",
+  "topics": [
+    "aikit",
+    "artificial-life",
+    "cli",
+    "evolution-simulation",
+    "genetics",
+    "python",
+    "simulation",
+    "speciation",
+    "zero-dependency",
+    "web-observatory",
+    "source-available",
+    "aegeanworks",
+    "biology",
+    "command-line-tool",
+    "complex-systems",
+    "software",
+    "evolutionary-algorithm",
+    "genetic-algorithm",
+    "ecosystem-simulation",
+    "zero-dependencies"
+  ],
+  "topics_source": "ai:kilo:2026-10-27",
+  "topics_reviewed_at": "2026-10-28",
+  "topics_choice": [
+    "aegeanworks",
+    "software",
+    "command-line-tool",
+    "biology",
+    "complex-systems"
+  ],
+  "topics_choice_round2": [
+    "artificial-life",
+    "evolution-simulation",
+    "genetics",
+    "speciation",
+    "simulation",
+    "complex-systems"
+  ],
+  "topics_choice_round3": [
+    "artificial-life",
+    "evolution-simulation",
+    "genetics",
+    "speciation"
+  ],
+  "topics_choice_round4": [
+    "evolutionary-algorithm",
+    "genetic-algorithm",
+    "ecosystem-simulation",
+    "zero-dependencies"
+  ]
 }
