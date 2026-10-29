@@ -4,6 +4,9 @@
 .aikit/*.tmp_*
 .aikit/*.corrupt_*
 
+# Reforge review packets are regenerable audit evidence; reforge.json keeps the run state.
+.aikit/reforge.reviews/
+
 # Python caches
 __pycache__/
 *.pyc
