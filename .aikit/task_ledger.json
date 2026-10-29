@@ -10,81 +10,6 @@
   },
   "checkpoints": [
     {
-      "task_id": "task-primordia-audit-v4",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/5] movement: never invent a step on a zero-delta axis when the direct tile is water (creatures currently sidestep away from the target); [2/5] round-trip: spawn normalizes energy to float so integer energy keeps the snapshot hash across save/load, and saves carry the species registry distance (0.18 default for old files); [3/5] integrity: shocks refuse non-whole coordinates, radius and count plus non-numeric shares, and snapshot verification refuses impossible ages, fossil dates and event ancestors; [4/5] release 1.0.4 with README, ADR-010 and the test tally; [5/5] strict gates, commits and close.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792433021.4419365,
-      "timestamp_str": "2026-10-19 21:03:41",
-      "impact_assessment": {
-        "why": "The fourth full-code audit found defects past 1.0.3: a blocked direct step makes a creature sidestep on an axis it does not need to move along; spawn(energy=45) stores an int so the snapshot hash changes after a save/load; a custom species threshold is lost by saves; shock API misuse raises TypeError instead of a readable ValueError; and snapshots with negative ages or impossible fossil dates are trusted.",
-        "benefits": "Creatures stay on the target line when the direct tile is water; the save/load replay contract holds for integer energy and custom thresholds; operator mistakes get readable ValueErrors; malformed snapshots are refused instead of rendering nonsense.",
-        "risks": "contract: movement and shock validation change edge-input behaviour, and saves gain an optional distance field (old saves still load at 0.18); dependency: none; concurrency: none; state: fixed-seed histories change where a creature used to sidestep, and a previously loadable malformed snapshot may now be refused; determinism stays exact for valid saves.",
-        "mitigation": "Failing-first test per defect; full suite plus a 500-tick save/load hash replay after each milestone; keep the new save field optional with a documented default; regenerate the map, record checklists and commit each milestone alone."
-      }
-    },
-    {
-      "task_id": "task-primordia-audit-v4",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[1/5] Movement fixed: a creature whose direct tile toward a target is water no longer invents a step on an axis with a zero delta (it used to sidestep, and a second stride could carry it to (3,5) or (5,3)); steps now come only from nonzero deltas, larger axis first, unchanged on open ground. 1 new failing-first test covers both axes; 126/126 tests in 2.5s; 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792433072.2662241,
-      "timestamp_str": "2026-10-19 21:04:32"
-    },
-    {
-      "task_id": "task-primordia-audit-v4",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[2/5] Round trip fixed: Engine.spawn stores energy as a float, so spawn(..., energy=45) no longer changes the snapshot hash after a save/load; SpeciesRegistry normalizes its threshold to a float, and a save now carries species_distance, with older files defaulting to 0.18 and non-finite or negative thresholds refused as corrupt. 3 new failing-first tests (integer energy hash, custom threshold, old-save default); 129/129 tests in 2.4s; 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792433180.3564217,
-      "timestamp_str": "2026-10-19 21:06:20"
-    },
-    {
-      "task_id": "task-primordia-audit-v4",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[3/5] Integrity fixed: shocks now reject non-whole x/y/radius/count and non-numeric or boolean shares with a readable ValueError (floats used to reach range() as TypeError; string shares failed comparisons); snapshot verification refuses ages outside [0, tick], sighting windows where first_seen is after last_seen or last_seen is in the future, extinction ticks beyond the snapshot and events with a future tick or an ancestor outside the lineage. 2 new failing-first tests with 6 shock sub-cases and 5 date sub-cases; 132/132 tests in 2.6s; 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792433256.3825576,
-      "timestamp_str": "2026-10-19 21:07:36"
-    },
-    {
-      "task_id": "task-primordia-audit-v4",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[4/5] Release 1.0.4: README documents the blocked-step guarantee, the exact integer-energy and species-threshold round trips, the stricter snapshot dates and the 132-test tally; ADR-010 records the audit, decisions and consequences; version bumped in __init__ and pyproject; verified primordia 1.0.4, a 500-tick save/load replay at 108 creatures over 3 species with 2 events and an equal hash, 132/132 tests and 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792433347.0359733,
-      "timestamp_str": "2026-10-19 21:09:07"
-    },
-    {
-      "task_id": "task-primordia-audit-v4",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[5/5] Delivery closed: the strict Phase 4 gate passed 4/4 and pushed the four audit commits (movement, round trips, integrity, release) to origin; 132/132 tests; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792433415.4186687,
-      "timestamp_str": "2026-10-19 21:10:15"
-    },
-    {
-      "task_id": "task-primordia-audit-v4",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'task-primordia-audit-v4' completed successfully.",
-      "status": "completed",
-      "timestamp": 1792433415.577503,
-      "timestamp_str": "2026-10-19 21:10:15"
-    },
-    {
       "task_id": "task-primordia-observatory-v5",
       "phase": "phase 2",
       "phase_num": 2,
@@ -228,6 +153,91 @@
       "status": "completed",
       "timestamp": 1792500399.2334442,
       "timestamp_str": "2026-10-20 15:46:39"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 1",
+      "phase_num": 3,
+      "description": "Reforge stage 1: window 3, 3 commit(s), 2 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793292557.228148,
+      "timestamp_str": "2026-10-29 19:49:17",
+      "agent": "opencode"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 2",
+      "phase_num": 3,
+      "description": "Reforge stage 2: window 13, 10 commit(s), 5 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, 5 binary not analysed",
+      "files_affected": [
+        "assets/artwork.jpg",
+        "assets/logo.jpg",
+        "assets/logo.png",
+        "assets/social-preview.jpg",
+        "assets/social-preview.png"
+      ],
+      "status": "in_progress",
+      "timestamp": 1793292776.307484,
+      "timestamp_str": "2026-10-29 19:52:56",
+      "agent": "opencode"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 3",
+      "phase_num": 3,
+      "description": "Reforge stage 3: window 23, 10 commit(s), 15 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793292873.2758996,
+      "timestamp_str": "2026-10-29 19:54:33",
+      "agent": "opencode"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 4",
+      "phase_num": 3,
+      "description": "Reforge stage 4: window 33, 10 commit(s), 13 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793292998.249209,
+      "timestamp_str": "2026-10-29 19:56:38",
+      "agent": "opencode"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 5",
+      "phase_num": 3,
+      "description": "Reforge stage 5: window 43, 10 commit(s), 17 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793293107.206366,
+      "timestamp_str": "2026-10-29 19:58:27",
+      "agent": "opencode"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 6",
+      "phase_num": 3,
+      "description": "Reforge stage 6: window 53, 10 commit(s), 19 file(s) reviewed (unreviewed), 1 finding(s), 0 repaired (regression=1)",
+      "files_affected": [
+        "primordia/web.py"
+      ],
+      "status": "in_progress",
+      "timestamp": 1793293247.6145275,
+      "timestamp_str": "2026-10-29 20:00:47",
+      "agent": "opencode"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 7",
+      "phase_num": 3,
+      "description": "Reforge stage 7: window 57, 4 commit(s), 22 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired",
+      "files_affected": [],
+      "status": "completed",
+      "timestamp": 1793293404.2279513,
+      "timestamp_str": "2026-10-29 20:03:24",
+      "agent": "opencode"
     }
   ]
 }
