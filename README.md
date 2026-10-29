@@ -39,6 +39,7 @@ keeps the story of what happened.
 ```text
 primordia/
 ├── .aikit/                   <- project memory: record, ledger, decisions, map
+├── assets/                   <- reviewed brand art: logo and social preview
 ├── .gitignore                <- transient AIKit state and Python caches excluded
 ├── LICENSE                   <- Aegean License 1.1 (AL-1.1): free personal use
 ├── LICENSES/                 <- REUSE license texts
