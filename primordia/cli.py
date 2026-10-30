@@ -95,6 +95,8 @@ def _build_parser() -> argparse.ArgumentParser:
     web.add_argument("--ticks", type=int, default=0, help="ticks to run before opening")
     web.add_argument("--host", default="127.0.0.1", help="interface to bind")
     web.add_argument("--port", type=int, default=8000, help="port to bind (0 picks a free one)")
+    web.add_argument("--open", action="store_true",
+                     help="open the observatory in the default browser and start playing")
     return parser
 
 
@@ -131,7 +133,8 @@ def _web(args: argparse.Namespace, out: TextIO) -> int:
     start_hash = engine.snapshot_hash()
     _advance(engine, args.ticks)
     code = serve(engine, args.host, args.port,
-                 out=lambda line: print(line, file=out, flush=True))
+                 out=lambda line: print(line, file=out, flush=True),
+                 open_browser=args.open)
     _persist_session(engine, args.path, start_hash, out)
     return code
 

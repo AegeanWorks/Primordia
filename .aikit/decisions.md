@@ -325,6 +325,36 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
   creature is its own founder; the loader's contract is untouched. 1 new test brings the unit
   suite tally from 150 to 151 tests.
 
+### ADR-014: A live observatory surface and one-click launchers
+
+- **Date**: 2026-10-30
+- **Status**: Accepted
+- **Context**: The observatory already rendered the map, tables, charts and shocks, but reaching
+  it required a command line, and the only way to advance it was a full-page reload through
+  `?step=N` or a meta refresh. A request asked for a real UI and a one-click start, without
+  giving up the zero-dependency, offline and deterministic contracts.
+- **Decision**: Keep the server-rendered dashboard as the single source of truth and add the
+  interactive layer beside it. The page now carries a sticky control bar (New world, Play/Pause,
+  `+1`/`+10`/`+100`, a speed slider and a save link), a native `<dialog>` start form, and a
+  `/live` fragment endpoint that advances and re-renders the world in place. The handler owns
+  one session dict (`engine` plus bounded history); `POST /new` validates seed, founders, width
+  and height against fixed safe bounds, builds a fresh `Engine`, and resets history under the
+  same lock every other route already uses. God-mode posts answer JSON when the UI sends
+  `X-Primordia-UI: 1`, and keep the existing 303 redirect for plain forms. `app.css` and
+  `app.js` are static package assets served from an allow-list; the no-JavaScript links,
+  `?step=N`, `?auto=S`, `/state.json`, `/history.json`, `/save` and every save/engine contract
+  survive unchanged. `serve(..., open_browser=True)` and `web --open` open the playing page, and
+  `start.py` with `start.bat`/`start.sh`/`start.command` provide the one-click entry point;
+  `.gitattributes` pins CRLF for `.bat` and LF for shell launchers, and `setuptools` ships the
+  static assets.
+- **Consequences**: Version 1.2.0. The browser can start, watch, step and shock a world without a
+  terminal, while the server remains the only owner of the rules and every old URL and JSON key
+  still works. The UI adds no runtime dependency and no network request beyond the local server.
+  The handler closure is now mutable through `/new`, so a session that started from a save file
+  replaces the in-memory world; the existing exit-time save writes the observed world back as
+  before. 17 new tests (151 to 168) cover live fragments, JSON refusals, session resets, static
+  assets, browser opening and launcher line endings.
+
 ## Licensing migration (v1.0.6-agpl)
 
 - New versions use the Aegean License 1.1 (AL-1.1); versions up to and including `v1.0.6-agpl` remain under GNU AGPL-3.0.

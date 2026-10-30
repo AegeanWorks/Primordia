@@ -141,3 +141,9 @@ class CliTests(unittest.TestCase):
             code, out, err = self.run_cli(["web", self.path])
         self.assertEqual(code, 0, err)
         self.assertEqual(Path(self.path).stat().st_mtime_ns, before)
+
+    def test_web_open_flag_reaches_the_observatory(self):
+        with mock.patch("primordia.web.serve", return_value=0) as serve_mock:
+            code, out, err = self.run_cli(["web", "--open", "--port", "0"])
+        self.assertEqual(code, 0, err)
+        self.assertTrue(serve_mock.call_args.kwargs["open_browser"])

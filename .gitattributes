@@ -1,0 +1,6 @@
+# Keep launch scripts native on every checkout.
+* text=auto
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh text eol=lf
+*.command text eol=lf

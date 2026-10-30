@@ -6,11 +6,11 @@
 ---
 
 ## 📊 Codebase Metrics
-- **Total Python Modules**: `23`
-- **Total Classes**: `51`
-- **Total Top-Level Functions**: `86`
-- **Total Class Methods**: `214`
-- **Total Source Lines**: `4257`
+- **Total Python Modules**: `25`
+- **Total Classes**: `56`
+- **Total Top-Level Functions**: `89`
+- **Total Class Methods**: `237`
+- **Total Source Lines**: `4712`
 
 ---
 
@@ -48,7 +48,7 @@
 ### [`primordia/cli.py`](primordia/cli.py)
 > *The command line: run a biosphere, resume one, report on it, or step it interactively.*
 
-**Size**: `289` lines (`11903` bytes)
+**Size**: `292` lines (`12087` bytes)
 
 **Functions:**
 - `def main(argv, out, err, stdin)` - *Run one command; returns the exit code: 0 success, 1 failure, 2 usage.*
@@ -227,24 +227,26 @@
 ### [`primordia/web.py`](primordia/web.py)
 > *The observatory: a local web view of a running world, with god-mode interventions.*
 
-**Size**: `688` lines (`31726` bytes)
+**Size**: `893` lines (`41400` bytes)
 
 **Functions:**
 - `def state_payload(engine)` - *The observable facts of one world, as JSON-ready data.*
 - `def record_history_point(engine)` - *Capture one snapshot of population and trait trends for time-series charts.*
 - `def build_population_svg(history)` - *Render population and living species count over time as an SVG chart.*
 - `def build_traits_svg(history)` - *Render average trait trajectories over time as an SVG chart.*
-- `def render_dashboard(engine, auto, notice, history)` - *The whole dashboard as one self-contained HTML page.*
+- `def _dashboard_fragment(engine, notice, history)` - *The live part of the page: facts, map, tables and charts, rendered as one fragment.*
+- `def render_dashboard(engine, auto, notice, history, autoplay)` - *The whole dashboard as one HTML page.*
 - `def build_phylogeny_svg(payload)` - *Render a phylogenetic tree as an SVG cladogram from lineage data.*
 - `def _map_html(engine, payload)` - *The tile grid: food shaded green, water blue, creatures dotted by lineage colour.*
 - `def _god_forms(cx, cy, width, height)` - *The intervention forms, pre-filled with the world's centre.*
-- `def make_handler(engine, lock, quiet, history)` - *The HTTP handler bound to one engine; every engine touch happens under `lock`.*
+- `def make_handler(engine, lock, quiet, history)` - *The HTTP handler bound to one session; every engine touch happens under `lock`.*
 - `def make_server(engine, host, port, quiet, history)` - *A server for `engine` on `(host, port)`; port 0 picks a free one.*
-- `def serve(engine, host, port, out)` - *Run the observatory until interrupted; returns the exit code 0.*
+- `def serve(engine, host, port, out, open_browser)` - *Run the observatory until interrupted; returns the exit code 0.*
 - `def _apply_god(engine, path, fields)` - *Map one god-mode POST path onto a shock; bad input raises ValueError.*
 - `def _content_length(header)` - *Validate the declared body size before reading; a bad header is a 400, never a wait.*
 - `def _query_int(query, name, default, low, high)`
-- `def _field_int(fields, name)`
+- `def _field_int(fields, name, default)`
+- `def _bounded(name, value, low, high)` - *Refuse a value outside the world's safe creation bounds.*
 - `def _field_float(fields, name, default)`
 - `def _error_page(message)` - *A refusal page that names what was rejected and how to fix the request.*
 
@@ -271,6 +273,16 @@
 **Functions:**
 - `def _require_int(name, value, minimum)` - *Refuse non-integer shapes and paces before they reach a range() or an index.*
 - `def _require_finite(name, value)` - *Refuse strings, NaN and infinity, which poison arithmetic without raising early.*
+
+---
+
+### [`start.py`](start.py)
+> *One-click entry point: start the observatory and open it in the browser.*
+
+**Size**: `26` lines (`810` bytes)
+
+**Functions:**
+- `def start(argv)` - *Start the web observatory and open its page; returns the CLI exit code.*
 
 ---
 
@@ -305,7 +317,7 @@
 ### [`tests/test_cli.py`](tests/test_cli.py)
 > *Unit tests for the command line: run, resume, stats and the interactive shell.*
 
-**Size**: `143` lines (`6463` bytes)
+**Size**: `149` lines (`6784` bytes)
 
 **Classes:**
 - `class CliTests`
@@ -328,6 +340,7 @@
   - Method `.test_an_untouched_observatory_leaves_its_save_alone()`
   - Method `.test_a_web_pre_roll_is_persisted_when_the_observatory_exits()`
   - Method `.test_a_bare_web_view_leaves_the_save_untouched()`
+  - Method `.test_web_open_flag_reaches_the_observatory()`
 
 ---
 
@@ -425,6 +438,22 @@
 
 ---
 
+### [`tests/test_launchers.py`](tests/test_launchers.py)
+> *One-click launchers: present, CRLF-safe on Windows and pointed at start.py.*
+
+**Size**: `53` lines (`2025` bytes)
+
+**Classes:**
+- `class LauncherTests`
+  - Method `.test_every_launcher_exists()`
+  - Method `.test_the_batch_file_uses_crlf()`
+  - Method `.test_the_launchers_point_at_start_py()`
+  - Method `.test_a_batch_failure_stays_visible()`
+  - Method `.test_gitattributes_pins_launcher_line_endings()`
+  - Method `.test_start_forwards_flags_to_the_web_command()`
+
+---
+
 ### [`tests/test_save.py`](tests/test_save.py)
 > *Unit tests for persistence: exact round trips, atomic writes, backup fallback and quarantine.*
 
@@ -498,7 +527,7 @@
 ### [`tests/test_web.py`](tests/test_web.py)
 > *Unit tests for the observatory: state payload, dashboard, god-mode shocks and the server.*
 
-**Size**: `480` lines (`20849` bytes)
+**Size**: `642` lines (`28351` bytes)
 
 **Classes:**
 - `class PayloadTests`
@@ -511,6 +540,7 @@
   - Method `.test_dashboard_species_table_shows_drift_near_and_diet()`
   - Method `.test_auto_refresh_is_optional()`
   - Method `.test_dashboard_renders_phylogenetic_tree()`
+  - Method `.test_dashboard_carries_the_live_controls_and_start_form()`
 - `class PhylogenyTests`
   - Method `.test_empty_lineage_renders_fallback_svg()`
   - Method `.test_populated_lineage_renders_cladogram_nodes_and_branches()`
@@ -551,6 +581,25 @@
   - Method `.test_an_impossible_port_raises_a_save_error_asking_for_another()`
   - Method `.test_a_public_bind_warns_that_there_is_no_authentication()`
   - Method `.test_a_loopback_bind_stays_quiet()`
+  - Method `.test_open_browser_opens_the_playing_page()`
+- `class ObservatoryServerCase` - *A real socket on a free port, torn down with the test.*
+  - Method `.start_observatory(engine)`
+- `class LiveFragmentTests`
+  - Method `.setUp()`
+  - Method `.test_live_fragment_steps_the_world_without_a_page_shell()`
+  - Method `.test_live_refuses_a_negative_step()`
+  - Method `.test_static_assets_are_served_and_unknown_ones_are_not()`
+- `class NewWorldTests`
+  - Method `.setUp()`
+  - Method `._post(fields, as_ui)`
+  - Method `._state()`
+  - Method `.test_new_world_resets_the_session_and_its_history()`
+  - Method `.test_new_world_refuses_out_of_bounds_fields_as_json()`
+  - Method `.test_a_plain_form_new_world_redirects_to_the_playing_page()`
+- `class JsonShockTests`
+  - Method `.setUp()`
+  - Method `.test_a_ui_shock_returns_a_json_notice_and_mutates_the_world()`
+  - Method `.test_a_refused_ui_shock_is_json_with_a_reason()`
 
 **Functions:**
 - `def small_engine(seed, founders, **overrides)`

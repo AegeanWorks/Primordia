@@ -131,6 +131,15 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("phylogen", page.lower())
         self.assertIn("<svg", page)
 
+    def test_dashboard_carries_the_live_controls_and_start_form(self):
+        engine = small_engine()
+        page = render_dashboard(engine)
+        for token in ('id="play-toggle"', 'id="new-world-button"', 'id="new-world-form"',
+                      'id="speed"', 'data-step="1"', "/static/app.js", "/static/app.css"):
+            self.assertIn(token, page)
+        self.assertIn('data-autoplay="0"', page)
+        self.assertIn('data-autoplay="1"', render_dashboard(engine, autoplay=True))
+
 
 class PhylogenyTests(unittest.TestCase):
     def test_empty_lineage_renders_fallback_svg(self):
@@ -478,3 +487,156 @@ class ServeTests(unittest.TestCase):
         with mock.patch("primordia.web.make_server", return_value=fake_server):
             serve(small_engine(founders=0), host="127.0.0.1", port=8000, out=lines.append)
         self.assertNotIn("authentication", "\n".join(lines).lower())
+
+    def test_open_browser_opens_the_playing_page(self):
+        lines = []
+        fake_server = mock.Mock()
+        fake_server.server_address = ("127.0.0.1", 8000)
+        with mock.patch("primordia.web.make_server", return_value=fake_server), \
+                mock.patch("primordia.web.webbrowser.open_new_tab", return_value=True) as opener:
+            serve(small_engine(founders=0), host="127.0.0.1", port=8000,
+                  out=lines.append, open_browser=True)
+        opener.assert_called_once_with("http://127.0.0.1:8000/?play=1")
+        self.assertIn("http://127.0.0.1:8000/?play=1", "\n".join(lines))
+
+
+class ObservatoryServerCase(unittest.TestCase):
+    """A real socket on a free port, torn down with the test."""
+
+    def start_observatory(self, engine: Engine) -> str:
+        server = make_server(engine, host="127.0.0.1", port=0, quiet=True)
+        thread = threading.Thread(
+            target=lambda: server.serve_forever(poll_interval=0.05), daemon=True)
+        thread.start()
+
+        def stop() -> None:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=5)
+
+        self.addCleanup(stop)
+        host, port = server.server_address[:2]
+        return f"http://{host}:{port}"
+
+
+class LiveFragmentTests(ObservatoryServerCase):
+    def setUp(self):
+        self.engine = small_engine(seed=6, founders=12)
+        self.base = self.start_observatory(self.engine)
+
+    def test_live_fragment_steps_the_world_without_a_page_shell(self):
+        before = self.engine.tick
+        with urllib.request.urlopen(self.base + "/live?step=3", timeout=5) as response:
+            self.assertEqual(response.status, 200)
+            body = response.read().decode("utf-8")
+        self.assertEqual(self.engine.tick, before + 3)
+        self.assertNotIn("<html", body.lower())
+        self.assertIn('class="tile"', body)
+        self.assertEqual(body.count('class="tile"'), self.engine.world.length)
+
+    def test_live_refuses_a_negative_step(self):
+        with self.assertRaises(urllib.error.HTTPError) as caught:
+            urllib.request.urlopen(self.base + "/live?step=-1", timeout=5)
+        self.assertEqual(caught.exception.code, 400)
+        caught.exception.close()
+
+    def test_static_assets_are_served_and_unknown_ones_are_not(self):
+        with urllib.request.urlopen(self.base + "/static/app.js", timeout=5) as response:
+            self.assertIn("javascript", response.headers["Content-Type"])
+            self.assertIn(b"Primordia", response.read())
+        with urllib.request.urlopen(self.base + "/static/app.css", timeout=5) as response:
+            self.assertIn("text/css", response.headers["Content-Type"])
+            self.assertIn(b".topbar", response.read())
+        with self.assertRaises(urllib.error.HTTPError) as caught:
+            urllib.request.urlopen(self.base + "/static/missing.js", timeout=5)
+        self.assertEqual(caught.exception.code, 404)
+        caught.exception.close()
+
+
+class NewWorldTests(ObservatoryServerCase):
+    def setUp(self):
+        self.engine = small_engine(seed=3, founders=10)
+        self.base = self.start_observatory(self.engine)
+
+    def _post(self, fields, as_ui=True):
+        headers = {"X-Primordia-UI": "1"} if as_ui else {}
+        request = urllib.request.Request(
+            self.base + "/new", data=urllib.parse.urlencode(fields).encode("utf-8"),
+            headers=headers)
+        return urllib.request.urlopen(request, timeout=10)
+
+    def _state(self):
+        with urllib.request.urlopen(self.base + "/state.json", timeout=5) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    def test_new_world_resets_the_session_and_its_history(self):
+        for _ in range(5):
+            self.engine.step()
+        with self._post({"seed": "11", "founders": "7", "width": "20", "height": "9"}) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        self.assertEqual(data["tick"], 0)
+        state = self._state()
+        self.assertEqual(state["tick"], 0)
+        self.assertEqual(state["width"], 20)
+        self.assertEqual(state["height"], 9)
+        self.assertGreater(state["population"], 0)
+        self.assertLessEqual(state["population"], 7)
+        with urllib.request.urlopen(self.base + "/history.json", timeout=5) as response:
+            history = json.loads(response.read().decode("utf-8"))
+        self.assertEqual(len(history), 1)
+        self.assertEqual(history[0]["tick"], 0)
+
+    def test_new_world_refuses_out_of_bounds_fields_as_json(self):
+        request = urllib.request.Request(
+            self.base + "/new",
+            data=urllib.parse.urlencode({"width": "4", "height": "9"}).encode("utf-8"),
+            headers={"X-Primordia-UI": "1"})
+        with self.assertRaises(urllib.error.HTTPError) as caught:
+            urllib.request.urlopen(request, timeout=5)
+        self.assertEqual(caught.exception.code, 400)
+        body = json.loads(caught.exception.read().decode("utf-8"))
+        caught.exception.close()
+        self.assertIn("width", body["why"])
+
+    def test_a_plain_form_new_world_redirects_to_the_playing_page(self):
+        for _ in range(3):
+            self.engine.step()
+        with self._post({"seed": "5", "founders": "6", "width": "18", "height": "8"},
+                        as_ui=False) as response:
+            page = response.read().decode("utf-8")
+        self.assertIn("Primordia", page)
+        self.assertIn('data-autoplay="1"', page)
+        self.assertEqual(self._state()["tick"], 0)
+
+
+class JsonShockTests(ObservatoryServerCase):
+    def setUp(self):
+        self.engine = small_engine(seed=9, founders=12)
+        for _ in range(10):
+            self.engine.step()
+        self.base = self.start_observatory(self.engine)
+
+    def test_a_ui_shock_returns_a_json_notice_and_mutates_the_world(self):
+        before = len(self.engine.creatures)
+        request = urllib.request.Request(
+            self.base + "/god/cull",
+            data=urllib.parse.urlencode({"share": "0.5"}).encode("utf-8"),
+            headers={"X-Primordia-UI": "1"})
+        with urllib.request.urlopen(request, timeout=5) as response:
+            self.assertEqual(response.status, 200)
+            data = json.loads(response.read().decode("utf-8"))
+        self.assertEqual(data["action"], "cull")
+        self.assertIn("notice", data)
+        self.assertLess(len(self.engine.creatures), before)
+
+    def test_a_refused_ui_shock_is_json_with_a_reason(self):
+        request = urllib.request.Request(
+            self.base + "/god/cull",
+            data=urllib.parse.urlencode({"share": "1.5"}).encode("utf-8"),
+            headers={"X-Primordia-UI": "1"})
+        with self.assertRaises(urllib.error.HTTPError) as caught:
+            urllib.request.urlopen(request, timeout=5)
+        self.assertEqual(caught.exception.code, 400)
+        body = json.loads(caught.exception.read().decode("utf-8"))
+        caught.exception.close()
+        self.assertIn("share", body["why"])

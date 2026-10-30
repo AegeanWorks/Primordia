@@ -1,80 +1,17 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "task-primordia-drift-zero-threshold-v1",
-    "last_phase": "phase 4",
+    "task_id": "task-primordia-interactive-ui-v1",
+    "last_phase": "in_progress",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1792500399.0841985,
-    "completed_at": 1792500399.2334425
+    "updated_at": 1793344042.850825,
+    "owner": "opencode:primordia-ui",
+    "started_by": "opencode:primordia-ui",
+    "continuations": [],
+    "completed_at": 1793344062.7343025
   },
   "checkpoints": [
-    {
-      "task_id": "task-primordia-observatory-v5",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/5] God-mode interventions: add ice_age (climatic chill, food reduction, and thermophily-scaled stress) and radiation_burst (radiation-induced genetic mutation and instantaneous speciation); [2/5] Web Observatory God-mode integration and full lineage state payload; [3/5] Interactive phylogenetic tree visualization in the observatory; [4/5] Population and trait time-series SVG graphs; [5/5] Release 1.0.5 with ADR-011, documentation, regenerated map, and gate delivery.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792439755.2861466,
-      "timestamp_str": "2026-10-19 22:55:55",
-      "impact_assessment": {
-        "why": "The user requested Web Observatory enhancements: interactive lineage/phylogenetic tree visualization, population/trait time-series graphs, and new god-mode interventions (ice age, radiation burst).",
-        "benefits": "Operators can simulate global climate shocks and mutagenic radiation bursts, inspect complete phylogenetic lineages, and monitor population and trait dynamics over time through rich offline SVG charts without third-party dependencies.",
-        "risks": "contract: existing save schemas and determinism contracts must remain 100% intact; dependency: zero external packages; concurrency: thread safety under observatory lock; state: shock reports and observatory state remain backward-compatible.",
-        "mitigation": "Failing-first unit tests for each new shock, strict input validation matching existing shocks, zero modifications to save schema format, all engine operations guarded under observatory thread lock, and full Phase 4 verification gates."
-      }
-    },
-    {
-      "task_id": "task-primordia-observatory-v5",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[1/5] New God-mode interventions: added ice_age (climatic chill, food reduction on land, and thermophily-scaled energy stress) and radiation_burst (deterministic sampling of living creatures, genome mutation, and instantaneous speciation recording); 2 new test classes and validation tests added; 134/134 tests pass; 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792439841.2190533,
-      "timestamp_str": "2026-10-19 22:57:21"
-    },
-    {
-      "task_id": "task-primordia-observatory-v5",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[2/5] Web Observatory God-mode integration & full lineage payload: wired /god/ice_age and /god/radiation_burst into HTTP handler and forms; included complete species lineage array in state_payload for phylogenetic tracing; 2 new tests; 136/136 tests pass; 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792439968.7608664,
-      "timestamp_str": "2026-10-19 22:59:28"
-    },
-    {
-      "task_id": "task-primordia-observatory-v5",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[3/5] Interactive phylogenetic tree visualization in the observatory: implemented build_phylogeny_svg cladogram renderer with lineage depth layout, orthogonal branch paths, color-coded living/extinct status nodes, and rich tooltips; embedded tree in observatory dashboard; 3 new tests; 139/139 tests pass; 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792440144.7655842,
-      "timestamp_str": "2026-10-19 23:02:24"
-    },
-    {
-      "task_id": "task-primordia-observatory-v5",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[4/5] Population and trait time-series SVG graphs: added build_population_svg and build_traits_svg vector chart generators; session history tracking in observatory with MAX_HISTORY buffer; served /history.json endpoint; embedded trends panel in dashboard; 3 new tests; 142/142 tests pass; 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792440417.4457211,
-      "timestamp_str": "2026-10-19 23:06:57"
-    },
-    {
-      "task_id": "task-primordia-observatory-v5",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[5/5] Release 1.0.5: README documents the two new macro shocks (ice_age and radiation_burst), the interactive phylogenetic cladogram, and the ecology time-series SVG charts with the 142-test tally; ADR-011 records the architecture and decisions; version bumped to 1.0.5 in __init__ and pyproject; 142/142 tests pass; 4/4 gates; checklists: passed.",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792440618.9564843,
-      "timestamp_str": "2026-10-19 23:10:18"
-    },
     {
       "task_id": "task-primordia-observatory-v5",
       "phase": "completed",
@@ -238,6 +175,77 @@
       "timestamp": 1793293404.2279513,
       "timestamp_str": "2026-10-29 20:03:24",
       "agent": "opencode"
+    },
+    {
+      "task_id": "task-primordia-interactive-ui-v1",
+      "phase": "in_progress",
+      "phase_num": 2,
+      "description": "[1/5] Plan the interactive observatory UI and one-click launchers: a live control bar (new world, play/pause, step, speed), /live and /step.json endpoints over one session, static app.css/app.js, start.py + start.bat/start.sh/start.command with browser auto-open, docs, ADR and tests.",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793320115.566048,
+      "timestamp_str": "2026-10-30 03:28:35",
+      "agent": "opencode:primordia-ui",
+      "impact_assessment": {
+        "why": "The user asked for a UI and a one-click start; the observatory is only reachable through CLI flags and reloads the whole page to advance.",
+        "benefits": "Operators can create a world, play it, pause, step it and fire shocks from one page after double-clicking a launcher.",
+        "risks": "contract: existing HTML tokens, JSON payloads, save format and determinism must survive; dependency: none beyond the stdlib; concurrency: session resets and steps stay under the handler lock; state: a /new reset must not mutate a caller's save unexpectedly.",
+        "mitigation": "Keep the server-rendered dashboard as the single source, add fragment and JSON endpoints beside it, guard every engine touch with the existing lock, preserve all current routes and tokens, and cover resets, refusals and launchers with tests."
+      }
+    },
+    {
+      "task_id": "task-primordia-interactive-ui-v1",
+      "phase": "in_progress",
+      "phase_num": 4,
+      "description": "[2/5] Interactive observatory: session-backed /live fragment, JSON god-mode replies, /new world reset with bounded inputs, static app.css/app.js, live control bar and start dialog; 168 tests pass.",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793344036.395941,
+      "timestamp_str": "2026-10-30 10:07:16",
+      "agent": "opencode:primordia-ui"
+    },
+    {
+      "task_id": "task-primordia-interactive-ui-v1",
+      "phase": "in_progress",
+      "phase_num": 4,
+      "description": "[3/5] One-click start: start.py, start.bat/start.sh/start.command, .gitattributes line-ending policy, web --open browser hand-off and package data; launcher tests pass.",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793344036.5178137,
+      "timestamp_str": "2026-10-30 10:07:16",
+      "agent": "opencode:primordia-ui"
+    },
+    {
+      "task_id": "task-primordia-interactive-ui-v1",
+      "phase": "in_progress",
+      "phase_num": 4,
+      "description": "[4/5] Docs and memory: README quick start/tree/observatory sections, ADR-014, version 1.2.0, project.json ui web, .aikit/ui.json and regenerated codebase map.",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793344042.727503,
+      "timestamp_str": "2026-10-30 10:07:22",
+      "agent": "opencode:primordia-ui"
+    },
+    {
+      "task_id": "task-primordia-interactive-ui-v1",
+      "phase": "in_progress",
+      "phase_num": 4,
+      "description": "[5/5] Phase 4: 168/168 tests pass; 4/4 gates (test, hygiene, guidelines, secrets); checklists: passed.",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793344042.850825,
+      "timestamp_str": "2026-10-30 10:07:22",
+      "agent": "opencode:primordia-ui"
+    },
+    {
+      "task_id": "task-primordia-interactive-ui-v1",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'task-primordia-interactive-ui-v1' completed successfully.",
+      "status": "completed",
+      "timestamp": 1793344062.7343037,
+      "timestamp_str": "2026-10-30 10:07:42",
+      "agent": "opencode:primordia-ui"
     }
   ]
 }

@@ -1,11 +1,12 @@
 """The observatory: a local web view of a running world, with god-mode interventions.
 
 `serve` puts one engine behind a small stdlib HTTP server: the dashboard renders the map, the
-population, the species table and the fossil record; `?step=N` advances the clock before
-rendering and `?step=N&auto=S` adds a meta refresh so a tab can watch itself. The god-mode
-forms (meteor, bloom, cull, introduce) post into `shocks`, `/state.json` serves the same facts
-as data and `/save` downloads the standard save file. Everything is server-rendered HTML - no
-script assets, no third-party requests, works offline.
+population, the species table and the fossil record; the control bar plays, pauses, steps and
+starts a fresh world through `/live` and `/new`; the god-mode forms (meteor, bloom, cull,
+introduce, ice age, radiation burst) post into `shocks`, `/state.json` serves the same facts
+as data and `/save` downloads the standard save file. The page is server-rendered; the small
+`static/app.js` layer only swaps fragments and the CSS makes it readable. Everything works
+offline with no third-party requests.
 """
 
 from __future__ import annotations
@@ -15,19 +16,31 @@ import http.server
 import json
 import threading
 import urllib.parse
-from typing import Any, Callable, Dict, List, Optional
+import webbrowser
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from primordia import shocks
 from primordia.analytics import species_counts, species_metrics, trait_means
 from primordia.engine import Engine
 from primordia.save import SaveError, dump_text
-from primordia.world import LAND
+from primordia.world import LAND, WorldConfig
 
 MAX_STEP_PER_REQUEST = 2000
 MAX_POST_BYTES = 4096
 MAX_HISTORY = 500
 RECENT_EVENTS = 20
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost"})
+MIN_WORLD_WIDTH, MAX_WORLD_WIDTH = 8, 120
+MIN_WORLD_HEIGHT, MAX_WORLD_HEIGHT = 6, 80
+MAX_FOUNDERS = 500
+MIN_SEED, MAX_SEED = -2_147_483_648, 2_147_483_647
+UI_HEADER = "X-Primordia-UI"
+STATIC_DIR = Path(__file__).resolve().with_name("static")
+STATIC_TYPES = {
+    "app.css": "text/css; charset=utf-8",
+    "app.js": "text/javascript; charset=utf-8",
+}
 
 _STYLE = """
 :root { color-scheme: dark; }
@@ -274,17 +287,16 @@ def build_traits_svg(history: List[Dict[str, Any]]) -> str:
     )
 
 
-def render_dashboard(engine: Engine, auto: int = 0, notice: str = "",
-                     history: Optional[List[Dict[str, Any]]] = None) -> str:
-    """The whole dashboard as one self-contained HTML page."""
+def _dashboard_fragment(engine: Engine, notice: str = "",
+                        history: Optional[List[Dict[str, Any]]] = None) -> str:
+    """The live part of the page: facts, map, tables and charts, rendered as one fragment."""
     if history is None:
         history = [record_history_point(engine)]
     payload = state_payload(engine)
     width, height = payload["width"], payload["height"]
     cx, cy = width // 2, height // 2
-    meta = f'<meta http-equiv="refresh" content="{auto}">' if auto > 0 else ""
     notice_html = f'<p class="notice">{html.escape(notice)}</p>' if notice else ""
-    traits = ", ".join(f"{name} {value:.2f}" for name, value in payload["traits"].items())
+    traits = " ".join(f"{name} {value:.2f}" for name, value in payload["traits"].items())
     rows_html = "".join(
         f"<tr><td>{row['id']}</td><td>{row['alive']}</td><td>{row['peak']}</td>"
         f"<td>{row['drift']:.3f}</td><td>{row['near_speciation']}</td>"
@@ -297,40 +309,106 @@ def render_dashboard(engine: Engine, auto: int = 0, notice: str = "",
         f"{html.escape(' ' + event['detail']) if event['detail'] else ''}</li>"
         for event in reversed(payload["events"][-RECENT_EVENTS:]))
     god_html = _god_forms(cx, cy, width, height)
+    return f"""
+{notice_html}
+<div class="meter" id="live-meter">
+  <div class="stat"><span class="value">{payload['population']}</span><span class="label">population</span></div>
+  <div class="stat"><span class="value">{payload['species_alive']}</span><span class="label">species alive</span></div>
+  <div class="stat"><span class="value">{payload['species_total']}</span><span class="label">lineages ever</span></div>
+  <div class="stat"><span class="value">{payload['speciations']}</span><span class="label">speciations</span></div>
+  <div class="stat"><span class="value">{payload['extinctions']}</span><span class="label">extinctions</span></div>
+  <div class="stat tick"><span class="value">{payload['tick']}</span><span class="label">tick</span></div>
+</div>
+<p class="traits">mean traits: {traits}</p>
+<div class="layout">
+<section class="map-panel" aria-label="World map">
+  <div class="map" style="grid-template-columns: repeat({width}, 16px)">{_map_html(engine, payload)}</div>
+</section>
+<aside class="side">
+  <section class="panel">{god_html}</section>
+  <section class="panel">
+    <h2>Species</h2>
+    <div class="table-wrap">
+      <table><tr><th>id</th><th>alive</th><th>peak</th><th>drift</th><th>near</th><th>diet</th><th>born</th><th>ancestor</th></tr>{rows_html}</table>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Fossil record</h2>
+    <ol>{events_html}</ol>
+  </section>
+</aside>
+</div>
+<section class="panel trends-panel">
+<h2>Ecology trends &amp; population history</h2>
+<div class="charts">
+  <div class="chart-scroll">{build_population_svg(history)}</div>
+  <div class="chart-scroll">{build_traits_svg(history)}</div>
+</div>
+</section>
+<section class="panel phylogeny-panel">
+<h2>Phylogenetic tree</h2>
+<div class="tree-container">{build_phylogeny_svg(payload)}</div>
+</section>
+"""
+
+
+def render_dashboard(engine: Engine, auto: int = 0, notice: str = "",
+                     history: Optional[List[Dict[str, Any]]] = None,
+                     autoplay: bool = False) -> str:
+    """The whole dashboard as one HTML page."""
+    if history is None:
+        history = [record_history_point(engine)]
+    meta = f'<meta http-equiv="refresh" content="{auto}">' if auto > 0 else ""
+    play_flag = "1" if autoplay else "0"
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">{meta}
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Primordia observatory</title>
 <style>{_STYLE}</style>
+<link rel="stylesheet" href="/static/app.css">
 </head>
-<body>
-<h1>Primordia <span class="sub">tick {payload['tick']}</span></h1>
-<p class="stats">population {payload['population']} &middot; species {payload['species_alive']} alive of {payload['species_total']} &middot; speciations {payload['speciations']} &middot; extinctions {payload['extinctions']}</p>
-<p class="traits">mean traits: {traits}</p>
-<nav><a href="/?step=1">step 1</a><a href="/?step=25">step 25</a><a href="/?step=100">step 100</a><a href="/?step=400&auto=2">auto-play</a><a href="/">refresh</a><a href="/state.json">state.json</a><a href="/history.json">history.json</a><a href="/save">save</a></nav>
-{notice_html}
-<div class="layout">
-<section class="map" style="grid-template-columns: repeat({width}, 16px)">{_map_html(engine, payload)}</section>
-<aside>
-{god_html}
-<h2>Species</h2>
-<table><tr><th>id</th><th>alive</th><th>peak</th><th>drift</th><th>near</th><th>diet</th><th>born</th><th>ancestor</th></tr>{rows_html}</table>
-<h2>Fossil record</h2>
-<ol>{events_html}</ol>
-</aside>
-</div>
-<section class="trends-panel" style="margin-top: 24px;">
-<h2>Ecology trends & population history</h2>
-<div style="display: flex; flex-direction: column; gap: 16px;">
-  <div style="overflow-x: auto; padding: 4px 0;">{build_population_svg(history)}</div>
-  <div style="overflow-x: auto; padding: 4px 0;">{build_traits_svg(history)}</div>
-</div>
-</section>
-<section class="phylogeny-panel" style="margin-top: 24px;">
-<h2>Phylogenetic tree</h2>
-<div class="tree-container" style="overflow-x: auto; padding: 4px 0;">{build_phylogeny_svg(payload)}</div>
-</section>
+<body data-autoplay="{play_flag}">
+<header class="topbar">
+  <div class="brand"><span class="mark" aria-hidden="true">&#9673;</span> Primordia
+    <span class="sub">evolution observatory</span></div>
+  <div class="controls" role="toolbar" aria-label="World controls">
+    <button type="button" id="new-world-button" class="ghost">New world</button>
+    <button type="button" id="play-toggle" class="primary" aria-pressed="false">Play</button>
+    <span class="steps">
+      <button type="button" data-step="1">+1</button>
+      <button type="button" data-step="10">+10</button>
+      <button type="button" data-step="100">+100</button>
+    </span>
+    <label class="speed">speed
+      <input id="speed" type="range" min="1" max="30" value="8">
+      <output id="speed-value" for="speed">8&times;</output>
+    </label>
+    <span id="status" class="status" data-state="paused">paused</span>
+    <a class="button ghost" href="/save">save</a>
+  </div>
+</header>
+<dialog id="new-world-dialog" aria-labelledby="new-world-title">
+  <form method="post" action="/new" id="new-world-form">
+    <h2 id="new-world-title">Start a new world</h2>
+    <p class="hint">Same seed, same history. The current world is discarded unless you save it first.</p>
+    <div class="fields">
+      <label>seed <input name="seed" type="number" value="42" step="1"></label>
+      <label>founders <input name="founders" type="number" value="60" min="1" max="{MAX_FOUNDERS}"></label>
+      <label>width <input name="width" type="number" value="36" min="{MIN_WORLD_WIDTH}" max="{MAX_WORLD_WIDTH}"></label>
+      <label>height <input name="height" type="number" value="18" min="{MIN_WORLD_HEIGHT}" max="{MAX_WORLD_HEIGHT}"></label>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" id="new-world-cancel" class="ghost">Cancel</button>
+      <button type="submit" class="primary">Start world</button>
+    </div>
+  </form>
+</dialog>
+<main id="live">{_dashboard_fragment(engine, notice=notice, history=history)}</main>
+<noscript><nav class="fallback"><a href="/?step=1">step 1</a><a href="/?step=25">step 25</a><a href="/?step=100">step 100</a><a href="/?step=400&amp;auto=2">auto-play</a><a href="/">refresh</a><a href="/state.json">state.json</a><a href="/history.json">history.json</a></nav></noscript>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/static/app.js" defer></script>
 </body>
 </html>
 """
@@ -480,12 +558,14 @@ def _god_forms(cx: int, cy: int, width: int, height: int) -> str:
 
 def make_handler(engine: Engine, lock: threading.Lock, quiet: bool = False,
                  history: Optional[List[Dict[str, Any]]] = None) -> type:
-    """The HTTP handler bound to one engine; every engine touch happens under `lock`."""
-    if history is None:
-        history = [record_history_point(engine)]
+    """The HTTP handler bound to one session; every engine touch happens under `lock`."""
+    session: Dict[str, Any] = {
+        "engine": engine,
+        "history": history if history is not None else [record_history_point(engine)],
+    }
 
     class Observatory(http.server.BaseHTTPRequestHandler):
-        server_version = "PrimordiaObservatory/1.0"
+        server_version = "PrimordiaObservatory/1.1"
 
         def log_message(self, fmt: str, *args: Any) -> None:
             if not quiet:
@@ -498,36 +578,48 @@ def make_handler(engine: Engine, lock: threading.Lock, quiet: bool = False,
                 try:
                     step = _query_int(query, "step", 0, 0, MAX_STEP_PER_REQUEST)
                     auto = _query_int(query, "auto", 0, 0, 3600)
+                    play = _query_int(query, "play", 0, 0, 1)
                 except ValueError as error:
-                    self._send_page(400, _error_page(str(error)))
+                    self._fail(400, str(error))
                     return
+                notice = query.get("notice", [""])[0]
                 with lock:
-                    cadence = max(1, step // 30) if step > 0 else 1
-                    for i in range(step):
-                        engine.step()
-                        if (i + 1) % cadence == 0 or (i + 1) == step:
-                            history.append(record_history_point(engine))
-                            if len(history) > MAX_HISTORY:
-                                del history[0]
-                    notice = query.get("notice", [""])[0]
-                    self._send_page(200, render_dashboard(engine, auto=auto, notice=notice, history=history))
+                    self._advance_locked(step)
+                    page = render_dashboard(session["engine"], auto=auto, notice=notice,
+                                            history=session["history"], autoplay=bool(play))
+                self._send_page(200, page)
+            elif parsed.path == "/live":
+                try:
+                    step = _query_int(query, "step", 0, 0, MAX_STEP_PER_REQUEST)
+                except ValueError as error:
+                    self._fail(400, str(error))
+                    return
+                notice = query.get("notice", [""])[0]
+                with lock:
+                    self._advance_locked(step)
+                    page = _dashboard_fragment(session["engine"], notice=notice,
+                                               history=session["history"])
+                self._send_page(200, page)
             elif parsed.path == "/state.json":
                 with lock:
-                    body = json.dumps(state_payload(engine),
+                    body = json.dumps(state_payload(session["engine"]),
                                       separators=(",", ":")).encode("utf-8")
                 self._send(200, body, "application/json; charset=utf-8")
             elif parsed.path == "/history.json":
                 with lock:
-                    body = json.dumps(history, separators=(",", ":")).encode("utf-8")
+                    body = json.dumps(session["history"], separators=(",", ":")).encode("utf-8")
                 self._send(200, body, "application/json; charset=utf-8")
             elif parsed.path == "/favicon.ico":
                 self._send(204, b"", "image/x-icon")
             elif parsed.path == "/save":
                 with lock:
-                    body = dump_text(engine).encode("utf-8")
-                    self._send(200, body, "application/json; charset=utf-8",
-                               extra={"Content-Disposition":
-                                      f'attachment; filename="primordia-{engine.tick}.json"'})
+                    body = dump_text(session["engine"]).encode("utf-8")
+                    tick = session["engine"].tick
+                self._send(200, body, "application/json; charset=utf-8",
+                           extra={"Content-Disposition":
+                                  f'attachment; filename="primordia-{tick}.json"'})
+            elif parsed.path.startswith("/static/"):
+                self._send_static(parsed.path[len("/static/"):])
             else:
                 self._send(404, b"not found\n", "text/plain; charset=utf-8")
 
@@ -538,23 +630,115 @@ def make_handler(engine: Engine, lock: threading.Lock, quiet: bool = False,
                 fields = urllib.parse.parse_qs(self.rfile.read(length).decode("utf-8"))
             except ValueError as error:
                 self.close_connection = True
-                self._send_page(400, _error_page(str(error)))
+                self._fail(400, str(error))
+                return
+            if parsed.path == "/new":
+                self._new_world(fields)
                 return
             with lock:
                 try:
-                    report = _apply_god(engine, parsed.path, fields)
-                    history.append(record_history_point(engine))
-                    if len(history) > MAX_HISTORY:
-                        del history[0]
+                    report = _apply_god(session["engine"], parsed.path, fields)
                 except ValueError as error:
-                    self._send_page(400, _error_page(str(error)))
+                    self._fail(400, str(error))
                     return
-            summary = f"{report.action}: {report.detail} ({report.tiles} tiles, {report.creatures} creatures)"
+                self._record_locked()
+                tick = session["engine"].tick
+            summary = (f"{report.action}: {report.detail}"
+                       f" ({report.tiles} tiles, {report.creatures} creatures)")
+            if self._wants_json():
+                self._send_json(200, {"notice": summary, "tick": tick,
+                                      "action": report.action, "detail": report.detail,
+                                      "tiles": report.tiles,
+                                      "creatures": report.creatures})
+                return
             self.send_response(303)
             self.send_header("Location", "/?notice=" + urllib.parse.quote(summary))
             self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", "0")
             self.end_headers()
+
+        def _new_world(self, fields: Dict[str, List[str]]) -> None:
+            """Replace the observed session with a fresh world from the start form."""
+            try:
+                seed = _field_int(fields, "seed", default=42)
+                founders = _field_int(fields, "founders", default=60)
+                width = _field_int(fields, "width", default=36)
+                height = _field_int(fields, "height", default=18)
+                _bounded("seed", seed, MIN_SEED, MAX_SEED)
+                _bounded("founders", founders, 1, MAX_FOUNDERS)
+                _bounded("width", width, MIN_WORLD_WIDTH, MAX_WORLD_WIDTH)
+                _bounded("height", height, MIN_WORLD_HEIGHT, MAX_WORLD_HEIGHT)
+                fresh = Engine(config=WorldConfig(width=width, height=height),
+                               seed=seed, founders=founders)
+            except ValueError as error:
+                self._fail(400, str(error),
+                           "use a seed inside the signed 32-bit range, 1-500 founders,"
+                           " a width of 8-120 and a height of 6-80")
+                return
+            with lock:
+                session["engine"] = fresh
+                session["history"][:] = [record_history_point(fresh)]
+            notice = (f"new world: seed {seed}, {founders} founders,"
+                      f" {width}x{height}")
+            if self._wants_json():
+                self._send_json(200, {"notice": notice, "tick": 0,
+                                      "width": width, "height": height,
+                                      "founders": founders, "seed": seed})
+                return
+            self.send_response(303)
+            self.send_header("Location", "/?play=1&notice=" + urllib.parse.quote(notice))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+
+        def _advance_locked(self, step: int) -> None:
+            """Step the session and sample its history; the caller holds the lock."""
+            if step <= 0:
+                return
+            engine_now = session["engine"]
+            cadence = max(1, step // 30)
+            for index in range(step):
+                engine_now.step()
+                if (index + 1) % cadence == 0 or (index + 1) == step:
+                    self._record_locked()
+
+        def _record_locked(self) -> None:
+            """Append one history point and keep the ring bounded; the caller holds the lock."""
+            points = session["history"]
+            points.append(record_history_point(session["engine"]))
+            if len(points) > MAX_HISTORY:
+                del points[0]
+
+        def _wants_json(self) -> bool:
+            """Whether the caller is the interactive page rather than a plain form."""
+            header = (self.headers.get(UI_HEADER) or "").strip().lower()
+            accept = (self.headers.get("Accept") or "").lower()
+            return header in {"1", "true"} or "application/json" in accept
+
+        def _fail(self, status: int, message: str, fix: str = "") -> None:
+            """Answer a bad request as JSON for the UI or as the readable error page."""
+            if self._wants_json():
+                self._send_json(status, {"error": message, "why": message,
+                                         "fix": fix or "send whole numbers inside the bounds"})
+                return
+            self._send_page(status, _error_page(message))
+
+        def _send_json(self, status: int, value: Dict[str, Any]) -> None:
+            self._send(status, json.dumps(value, separators=(",", ":")).encode("utf-8"),
+                       "application/json; charset=utf-8")
+
+        def _send_static(self, name: str) -> None:
+            """Serve the allow-listed UI assets; anything else is a plain 404."""
+            content_type = STATIC_TYPES.get(name)
+            if content_type is None:
+                self._send(404, b"not found\n", "text/plain; charset=utf-8")
+                return
+            try:
+                body = (STATIC_DIR / name).read_bytes()
+            except OSError:
+                self._send(404, b"not found\n", "text/plain; charset=utf-8")
+                return
+            self._send(200, body, content_type)
 
         def _send(self, status: int, body: bytes, content_type: str,
                   extra: Optional[Dict[str, str]] = None) -> None:
@@ -582,7 +766,8 @@ def make_server(engine: Engine, host: str = "127.0.0.1", port: int = 8000,
 
 
 def serve(engine: Engine, host: str = "127.0.0.1", port: int = 8000,
-          out: Optional[Callable[[str], None]] = None) -> int:
+          out: Optional[Callable[[str], None]] = None,
+          open_browser: bool = False) -> int:
     """Run the observatory until interrupted; returns the exit code 0."""
     emit = print if out is None else out
     try:
@@ -595,7 +780,17 @@ def serve(engine: Engine, host: str = "127.0.0.1", port: int = 8000,
                 " a free one with --port 0",
         ) from error
     bound_host, bound_port = server.server_address[:2]
-    emit(f"observatory at http://{bound_host}:{bound_port} (ctrl-c stops)")
+    url = f"http://{bound_host}:{bound_port}/"
+    if open_browser:
+        url += "?play=1"
+    emit(f"observatory at {url} (ctrl-c stops)")
+    if open_browser:
+        try:
+            opened = webbrowser.open_new_tab(url)
+        except webbrowser.Error:
+            opened = False
+        if not opened:
+            emit("open the address above in a browser; automatic opening was refused")
     if str(bound_host).lower() not in LOOPBACK_HOSTS:
         emit("warning: the observatory has no authentication; anyone who can reach"
              " this address can step the world and fire god-mode shocks")
@@ -656,14 +851,24 @@ def _query_int(query: Dict[str, List[str]], name: str, default: int, low: int, h
     return value
 
 
-def _field_int(fields: Dict[str, List[str]], name: str) -> int:
+def _field_int(fields: Dict[str, List[str]], name: str,
+               default: Optional[int] = None) -> int:
     values = fields.get(name)
     if not values:
-        raise ValueError(f"the form needs {name}")
+        if default is None:
+            raise ValueError(f"the form needs {name}")
+        return default
     try:
         return int(values[0])
     except ValueError:
         raise ValueError(f"{name} must be a whole number") from None
+
+
+def _bounded(name: str, value: int, low: int, high: int) -> int:
+    """Refuse a value outside the world's safe creation bounds."""
+    if not low <= value <= high:
+        raise ValueError(f"{name} must be between {low} and {high}, got {value}")
+    return value
 
 
 def _field_float(fields: Dict[str, List[str]], name: str,

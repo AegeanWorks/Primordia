@@ -10,17 +10,21 @@ Primordia is a zero-dependency evolution sandbox: seed a biosphere, run its cloc
 genomes vary, compete and speciate. A run replays exactly from its seed, and a fossil record
 keeps the story of what happened.
 
-> **Status**: v1.0.6 - all six milestones are in: the genome model, the seasonal world and the
+> **Status**: v1.2.0 - all six milestones are in: the genome model, the seasonal world and the
 > deterministic engine, phenetic species with a fossil record, atomic saves and a command line,
 > and the web observatory with interactive phylogenetic cladograms, ecology time-series charts,
 > lineage drift readings, and six god-mode shocks; post-release audits hardened configs, saves,
 > the filesystem edges, the observatory's request handling, the simulation's neighbour
 > bookkeeping and blocked steps, and the round-trip, intervention-input and snapshot-date
-> contracts.
+> contracts. The observatory now has a start screen and live controls, and `start.bat`,
+> `start.sh` and `start.command` open it in one click.
 
 ## ⚡ 30-Second Cold-Start Quick Reference
 
 - **Runtime Prerequisites**: Python 3.10+ (standard library only - zero third-party packages) and git.
+- **Start it (one click)**: double-click `start.bat` on Windows or `start.command` on macOS, or
+  run `./start.sh`; the browser opens on a live world. `python start.py` does the same from a
+  terminal, and `python -m primordia web` serves the observatory without opening a browser.
 - **Canonical Regression Shield Gate**:
   ```bash
   python aikit.py check primordia
@@ -46,6 +50,11 @@ primordia/
 ├── REUSE.toml                <- Machine-readable SPDX metadata
 ├── README.md
 ├── COMMERCIAL.md
+├── .gitattributes            <- launcher line-ending policy for every checkout
+├── start.py                  <- one-click entry point: serve and open the browser
+├── start.bat                 <- Windows double-click launcher
+├── start.sh                  <- POSIX launcher
+├── start.command             <- macOS double-click launcher
 ├── pyproject.toml            <- build, package configuration and the `primordia` script
 ├── primordia/                <- core package
 │   ├── __init__.py           <- package metadata
@@ -59,7 +68,10 @@ primordia/
 │   ├── save.py               <- versioned atomic saves and corrupt-file recovery
 │   ├── shocks.py             <- god-mode interventions: meteor, bloom, cull, introduce, ice_age, radiation_burst
 │   ├── species.py            <- phenetic species: genomes cluster by genetic distance
-│   ├── web.py                <- the observatory: cladogram, trends charts, local web view
+│   ├── web.py                <- the observatory: live controls, cladogram, trends charts
+│   ├── static/               <- the browser layer served by the observatory
+│   │   ├── app.css           <- the dashboard's layout and controls
+│   │   └── app.js            <- play, pause, step, new world and shock requests
 │   └── world.py              <- tile grid, food layer and temperature field
 └── tests/                    <- unit test suite
     ├── __init__.py
@@ -68,6 +80,7 @@ primordia/
     ├── test_engine.py        <- determinism, invariants and behavioural mechanics
     ├── test_fossil.py        <- censuses, extinction and the bounded event log
     ├── test_genome.py        <- gene bounds, mutation, crossover and distance
+    ├── test_launchers.py     <- one-click scripts, line endings and flag forwarding
     ├── test_save.py          <- round trips, atomic writes and backup recovery
     ├── test_species.py       <- classification, ancestry and monotone species ids
     ├── test_web.py           <- payload, dashboard, god-mode shocks and a socket smoke
@@ -177,16 +190,23 @@ installs the same commands as a `primordia` script.
 ## 🔭 The Web Observatory
 
 ```bash
-python -m primordia web --seed 7 --ticks 500      # then open http://127.0.0.1:8000
+./start.sh                                  # or double-click start.bat / start.command
+python start.py --seed 7 --ticks 500        # same, with a pre-rolled world
+python -m primordia web --seed 7 --ticks 500   # serve without opening a browser
 ```
 
 The observatory is a standard-library-only server rendering one world: a food-shaded map with
 every creature dotted in its lineage's colour, the population and fossil counters, the species
 table with each lineage's drift, near-threshold count and diet split, and the recent fossil
-events. `?step=N` advances the clock before rendering and
-`?step=N&auto=S` adds a meta refresh so a tab can watch a world live; `/state.json` serves the
-same facts as data, `/history.json` serves the recorded time-series trend history, and `/save`
-downloads the standard save file.
+events. The top bar is live: **Play/Pause**, `+1`/`+10`/`+100` steps, a speed slider, **New
+world** (seed, founders, width and height), and a save link. Play pulls a fresh fragment from
+`/live` every half second, so the map, tables, counters and charts update in place without a
+page reload; the god-mode forms post over the same channel and report their result as a toast.
+The page works without JavaScript through the fallback links, `?step=N` still advances the
+clock before rendering, and `?step=N&auto=S` adds a meta refresh so a tab can watch a world
+live. `/state.json` serves the same facts as data, `/history.json` serves the recorded
+time-series trend history, `/save` downloads the standard save file, and `/new` resets the
+session from the start form.
 
 Below the map, the observatory renders two rich vector views:
 1. **Ecology Trends & Population History**: inline SVG charts tracking total population, living
@@ -216,7 +236,7 @@ The unit suite runs with:
 python -m unittest discover
 ```
 
-151 tests replay fixed seeds: gene bounds and seeded reproducibility for the variation
+168 tests replay fixed seeds: gene bounds and seeded reproducibility for the variation
 operators; terrain, standing biomass, growth and temperature invariants plus config validation,
 including non-finite and non-integer inputs, for the world; classification, ancestry and
 monotone ids for the species registry; censuses, extinction and the bounded event log for the
@@ -228,7 +248,9 @@ resume, stats, the version flag, session persistence, reports under a zero speci
 threshold and the interactive shell for the command line; payload, dashboard rendering, disc
 geometry for god-mode shocks, request body
 validation, bind failures, real-socket smoke, full lineage payloads, phylogenetic cladograms,
-and time-series trend SVG charts for the observatory; byte-identical replays of the same seed,
+and time-series trend SVG charts for the observatory, live fragments, session resets, JSON
+shock responses and static assets for the interactive page, and the one-click launchers with
+their line-ending policy; byte-identical replays of the same seed,
 live neighbour bookkeeping, staged grazing and hunting mechanics, armored-defense arithmetic,
 a drift-to-speciation run, a blocked direct step that never sidesteps, integer-energy and
 custom-threshold round trips, typed shock inputs, refused snapshot dates and a performance smoke test.
