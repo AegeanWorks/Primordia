@@ -47,3 +47,12 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(registry.classify(Genome(genes=tuple(1.0 for _ in GENES)), tick=0)[0], 2)
         self.assertEqual(registry.classify(centered(), tick=0)[0], 3)
         self.assertEqual(len(registry), 3)
+
+    def test_default_ancestor_resolves_to_the_nearest_species(self):
+        registry = SpeciesRegistry()
+        registry.classify(centered(), tick=0)
+        far = Genome(genes=tuple(0.8 for _ in GENES))
+        species_id, is_new = registry.classify(far, tick=7)
+        self.assertTrue(is_new)
+        self.assertEqual(species_id, 2)
+        self.assertEqual(registry.get(2).ancestor, 1)

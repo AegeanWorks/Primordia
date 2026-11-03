@@ -9,8 +9,8 @@
 - **Total Python Modules**: `25`
 - **Total Classes**: `56`
 - **Total Top-Level Functions**: `89`
-- **Total Class Methods**: `237`
-- **Total Source Lines**: `4712`
+- **Total Class Methods**: `240`
+- **Total Source Lines**: `4750`
 
 ---
 
@@ -85,7 +85,7 @@
 ### [`primordia/engine.py`](primordia/engine.py)
 > *The deterministic tick loop: metabolism, sensing, action, birth and death.*
 
-**Size**: `447` lines (`21635` bytes)
+**Size**: `454` lines (`21999` bytes)
 
 **Classes:**
 - `class Engine` - *The simulation: a world plus its creatures, advanced one deterministic tick at a time.*
@@ -211,7 +211,7 @@
 ### [`primordia/species.py`](primordia/species.py)
 > *Phenetic species: genomes cluster by distance to a founding representative.*
 
-**Size**: `64` lines (`2432` bytes)
+**Size**: `65` lines (`2506` bytes)
 
 **Classes:**
 - `class Species` - *A named lineage: who founded it, when, and from which species it split.*
@@ -347,7 +347,7 @@
 ### [`tests/test_engine.py`](tests/test_engine.py)
 > *Unit tests for the engine: determinism, invariants and the behavioural mechanics.*
 
-**Size**: `288` lines (`12811` bytes)
+**Size**: `309` lines (`13892` bytes)
 
 **Classes:**
 - `class DeterminismTests`
@@ -371,6 +371,8 @@
   - Method `.test_spawn_refuses_non_finite_or_negative_energy()`
   - Method `.test_grazer_grazes_where_it_stands_instead_of_marching_to_equal_stock()`
   - Method `.test_attack_kills_a_weaker_neighbour_and_feeds_the_hunter()`
+  - Method `.test_suicidal_hunter_leaves_the_neighbour_buckets_at_once()`
+  - Method `.test_spawned_speciation_names_the_nearest_lineage()`
   - Method `.test_armored_victim_takes_less_damage()`
   - Method `.test_two_creatures_reproduce_and_children_hold_bounded_genomes()`
 - `class SpeciesIntegrationTests`
@@ -509,7 +511,7 @@
 ### [`tests/test_species.py`](tests/test_species.py)
 > *Unit tests for the species registry: phenetic clustering around founding genomes.*
 
-**Size**: `49` lines (`2048` bytes)
+**Size**: `58` lines (`2441` bytes)
 
 **Classes:**
 - `class RegistryTests`
@@ -518,6 +520,7 @@
   - Method `.test_far_drift_founds_a_new_species_with_its_ancestor()`
   - Method `.test_representative_is_the_founding_genome()`
   - Method `.test_ids_are_monotonic_and_unique()`
+  - Method `.test_default_ancestor_resolves_to_the_nearest_species()`
 
 **Functions:**
 - `def centered(**traits)`

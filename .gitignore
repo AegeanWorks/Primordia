@@ -10,3 +10,7 @@
 # Python caches
 __pycache__/
 *.pyc
+# AIKit transient state
+.aikit/*.log
+*.py[cod]
+node_modules/

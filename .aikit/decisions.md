@@ -362,6 +362,13 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Decision**: Correct `media.json` to `has_ui:true/web` and register `2026-11-03-observatory.png` (`python -m primordia web --seed 7 --ticks 500`, headless Edge 1440x900, commit `4b22927`) in `.aikit/media.json` and the README `aegean:screenshots` block. The text CLI stays README-documented.
 - **Consequences**: README proves the live world with stats, map, god mode, species, fossils and trends. Reproduce with the serve command plus headless `--screenshot`.
 
+### ADR-016: Sequential audit waves 0,10,20,30 over the first 30 commits
+- **Date**: 2026-11-03
+- **Status**: Accepted
+- **Context**: The first 30 of 63 commits (scaffold through audit-v4) carry the genome, engine, species, save and observatory contracts; a wave-ordered re-read was needed to confirm evidence-backed defects and drop unverifiable claims.
+- **Decision**: Wave 0 surveyed the oldest 10, wave 10 verified disc geometry, neighbour liveness and filesystem refusals, wave 20 analyzed the full-state hash, blocked steps and snapshot verification. Two findings were reproduced and repaired failing-first: (1) `SpeciesRegistry.classify` with the default ancestor now resolves to the nearest lineage and `Engine.spawn` records that ancestor in the fossil event instead of 0; (2) a hunter that spends its last energy still lands its strike, feeds on a kill, and is otherwise removed from the neighbour hash at once, with post-action death checks in `_tick_creature` so later creatures in the same tick never observe a dead hunter.
+- **Consequences**: 3 new tests bring the suite from 168 to 171; save format version 1 and determinism for valid states are unchanged, while fixed-seed histories that hit a suicidal strike or a spawned speciation now follow the corrected lineage.
+
 ## Licensing migration (v1.0.6-agpl)
 
 - New versions use the Aegean License 1.1 (AL-1.1); versions up to and including `v1.0.6-agpl` remain under GNU AGPL-3.0.

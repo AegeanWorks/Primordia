@@ -220,6 +220,27 @@ class BehaviourTests(unittest.TestCase):
         self.assertFalse(any(creature.cid == victim.cid for creature in engine.creatures))
         self.assertGreater(hunter.energy, 21.0)
 
+    def test_suicidal_hunter_leaves_the_neighbour_buckets_at_once(self):
+        engine = small_engine(3, founders=0, water_ratio=0.0)
+        hunter = engine.spawn(
+            staged_genome(size=0.9, diet=0.9, aggression=0.9), 1, 1, energy=0.5)
+        victim = engine.spawn(
+            staged_genome(size=0.8, diet=0.2, aggression=0.1), 1, 2, energy=10.0)
+        buckets = engine._neighbour_hash()
+        engine._attack(hunter, victim, buckets)
+        self.assertTrue(victim.alive)
+        self.assertFalse(hunter.alive)
+        self.assertNotIn(hunter, buckets.get(engine.world.index(1, 1), ()))
+
+    def test_spawned_speciation_names_the_nearest_lineage(self):
+        engine = small_engine(3, founders=0, water_ratio=0.0)
+        first = engine.spawn(staged_genome(), 1, 1, energy=20.0)
+        self.assertEqual(first.species, 1)
+        far = Genome(genes=tuple(0.9 for _ in range(GENE_COUNT)))
+        second = engine.spawn(far, 1, 2, energy=20.0)
+        self.assertGreater(second.species, 1)
+        self.assertEqual(engine.registry.get(second.species).ancestor, 1)
+
     def test_armored_victim_takes_less_damage(self):
         engine = small_engine(13, founders=0)
         (hx, hy), (vx, vy) = adjacent_land(engine)

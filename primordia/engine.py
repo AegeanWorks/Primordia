@@ -113,7 +113,8 @@ class Engine:
             raise ValueError(f"({x}, {y}) is not a land tile; creatures live on land only")
         species_id, is_new = self.registry.classify(genome, self.tick)
         if is_new and species_id > 1:
-            self.fossil.record_speciation(self.tick, species_id, ancestor=0, detail="introduced")
+            ancestor = self.registry.get(species_id).ancestor
+            self.fossil.record_speciation(self.tick, species_id, ancestor=ancestor, detail="introduced")
         creature = self._new_creature(genome, x, y, energy, species_id)
         self.creatures.append(creature)
         return creature
@@ -226,12 +227,16 @@ class Engine:
             return
         if creature.energy < self._satiation(creature):
             self._seek_energy(creature, buckets)
+            if creature.alive and creature.energy <= 0.0:
+                self._die(creature, buckets)
             return
         children = self._try_reproduce(creature, buckets)
         if children:
             newborns.extend(children)
         else:
             self._wander(creature, buckets)
+            if creature.alive and creature.energy <= 0.0:
+                self._die(creature, buckets)
 
     def _pay_upkeep(self, creature: Creature) -> None:
         genome = creature.genome
@@ -280,6 +285,8 @@ class Engine:
         if victim.energy <= 0.0:
             self._die(victim, buckets)
             hunter.energy += HUNT_ENERGY_GAIN * prey_energy
+        if hunter.energy <= 0.0 and hunter.alive:
+            self._die(hunter, buckets)
 
     def _try_reproduce(self, creature: Creature, buckets: Dict[int, List[Creature]]) -> List[Creature]:
         """A litter when energy allows and a mate shares the genome; asexual births are rarer."""

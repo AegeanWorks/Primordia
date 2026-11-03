@@ -7,11 +7,12 @@
   "has_ui": true,
   "ui_kind": "web",
   "ui_evidence": [
+    "primordia/web.py",
+    "primordia/static/app.js",
     "primordia/cli.py",
-    "start.py",
-    "tests/test_launchers.py"
+    "start.py"
   ],
-  "ui_checked_at": "2026-10-30",
+  "ui_checked_at": "2026-11-03",
   "ui_source": "manual",
   "topics": [
     "aikit",

@@ -1,77 +1,22 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "task-primordia-interactive-ui-v1",
-    "last_phase": "in_progress",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1793344042.850825,
-    "owner": "opencode:primordia-ui",
-    "started_by": "opencode:primordia-ui",
-    "continuations": [],
-    "completed_at": 1793344062.7343025
+    "task_id": "task-primordia-audit-waves",
+    "last_phase": "phase 4",
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1793723565.2257764,
+    "owner": "kilo:audit",
+    "started_by": "unidentified",
+    "continuations": [
+      {
+        "agent": "kilo:audit",
+        "from": "unidentified",
+        "at": 1793723339.6391098
+      }
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "task-primordia-observatory-v5",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'task-primordia-observatory-v5' completed successfully.",
-      "status": "completed",
-      "timestamp": 1792440644.7982564,
-      "timestamp_str": "2026-10-19 23:10:44"
-    },
-    {
-      "task_id": "task-primordia-lineage-drift-v1",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/4] Plan: lineage drift observability - per-species genetic distance to its founder, near-speciation count and trophic split in analytics, the CLI species/stats reports and the observatory payload/table; tests first",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792491559.1766691,
-      "timestamp_str": "2026-10-20 13:19:19",
-      "impact_assessment": {
-        "why": "Speciation is the project's headline mechanic, yet operators cannot see how far a living lineage has drifted from its founder or how close it is to splitting; only raw populations and global trait means are exposed.",
-        "benefits": "Turns the fossil record into a drift dashboard: the CLI and observatory surface each lineage's mean and worst drift as a fraction of the speciation threshold, plus herbivore/carnivore split and age, so a run's radiation is legible before the split happens.",
-        "risks": "contract: additive analytics API, CLI lines and JSON keys; determinism: no engine or RNG change; dependency: stdlib only (genome.genetic_distance); concurrency: read-only payload built under the server lock; state: no save-schema change, no persisted fields.",
-        "mitigation": "Leave every existing token, JSON key and table column in place; compute metrics in a pure function over the current population; prove determinism is untouched by re-running the existing replay and save round-trip tests in the Phase 4 gate."
-      }
-    },
-    {
-      "task_id": "task-primordia-lineage-drift-v1",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[3/4] Implementation and docs green: species_metrics wired into analytics, CLI reports/species rows and state_payload/dashboard; ADR-012 recorded; README and version 1.0.6 updated; 150/150 tests pass; checklists: passed (test, hygiene, guidelines, secrets 4/4)",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792492146.1794908,
-      "timestamp_str": "2026-10-20 13:29:06"
-    },
-    {
-      "task_id": "task-primordia-lineage-drift-v1",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'task-primordia-lineage-drift-v1' completed successfully.",
-      "status": "completed",
-      "timestamp": 1792492165.3387272,
-      "timestamp_str": "2026-10-20 13:29:25"
-    },
-    {
-      "task_id": "task-primordia-drift-zero-threshold-v1",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/3] Plan: guard the drift-share division in the CLI reports so a save with species_distance 0.0 renders 'no positive threshold' instead of raising ZeroDivisionError; regression test first",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1792500359.637633,
-      "timestamp_str": "2026-10-20 15:45:59",
-      "impact_assessment": {
-        "why": "Review of the lineage-drift commit found that save.py accepts a zero speciation distance, after which stats and repl species crash with an uncaught ZeroDivisionError.",
-        "benefits": "Restores the readable Why:/Fix: command-line contract for every save the loader accepts and closes the review finding.",
-        "risks": "contract: CLI text only, JSON and save schema untouched; dependency: none; concurrency: none; state: no persisted fields.",
-        "mitigation": "Confine the change to one helper plus the two report sites, keep the existing percentage text for positive thresholds, and prove it with a failing-first regression test plus the full Phase 4 gate."
-      }
-    },
     {
       "task_id": "task-primordia-drift-zero-threshold-v1",
       "phase": "phase 4",
@@ -246,6 +191,69 @@
       "timestamp": 1793344062.7343037,
       "timestamp_str": "2026-10-30 10:07:42",
       "agent": "opencode:primordia-ui"
+    },
+    {
+      "task_id": "task-primordia-audit-waves",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/4] Plan audit waves 0,10,20,30 over first 30 commits (63 total): survey oldest 10, verify next 10, analyze next 10, implement minimal failing-first fixes",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793723261.3644483,
+      "timestamp_str": "2026-11-03 19:27:41",
+      "agent": "unidentified",
+      "impact_assessment": {
+        "why": "sequential audit of first 30 commits to find evidence-backed defects without touching other projects",
+        "benefits": "verifiable findings with repro, minimal fixes, full gates, clean commit",
+        "risks": "contract: read-only until wave 30; dependency: stdlib only; concurrency: single session under lock; state: no save-schema change unless ADR",
+        "mitigation": "drop unverifiable claims; failing-first tests; run aikit check; explicit staging; do not push"
+      },
+      "plan_digest": "55dc0edbd2144b41eea515a546b2047986120760c20e5f0a6669bc9075de2db9"
+    },
+    {
+      "task_id": "task-primordia-audit-waves",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[2/4] Wave 0 survey oldest 10 (scaffold through save crash-window): genome/engine/species/save/web core surveyed; candidate spawn-ancestor and post-action death noted",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793723339.6391098,
+      "timestamp_str": "2026-11-03 19:28:59",
+      "agent": "kilo:audit",
+      "continued_from": "unidentified"
+    },
+    {
+      "task_id": "task-primordia-audit-waves",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[3/4] Wave 10 verify commits 10-19 (disc through snapshot integrity): disc Euclidean verified, neighbour-hash live verified, folder/quarantine refusals verified; spawn ancestor=0 reproduced, hunter lingering reproduced; others dropped as unverifiable",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793723346.3257508,
+      "timestamp_str": "2026-11-03 19:29:06",
+      "agent": "kilo:audit"
+    },
+    {
+      "task_id": "task-primordia-audit-waves",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[3/4] Wave 20 analyze commits 20-29 (full-state hash through audit-v4 close): blocked-step on-axis verified, energy-type and threshold-carry verified, shock-input and snapshot-date refusals verified; two findings confirmed in-scope, no save-schema change needed",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793723350.5781755,
+      "timestamp_str": "2026-11-03 19:29:10",
+      "agent": "kilo:audit"
+    },
+    {
+      "task_id": "task-primordia-audit-waves",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/4] Wave 30 implement: classify default ancestor to nearest, spawn fossil ancestor fix, suicidal-hunter immediate removal plus post-action death checks; 3 failing-first tests added; ADR-016 appended; README 171; checklists: passed",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793723565.2257764,
+      "timestamp_str": "2026-11-03 19:32:45",
+      "agent": "kilo:audit"
     }
   ]
 }

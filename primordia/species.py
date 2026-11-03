@@ -58,7 +58,8 @@ class SpeciesRegistry:
                 best_id, best_distance = species.species_id, distance
         if best_id != 0 and best_distance <= self.distance:
             return best_id, False
+        resolved = ancestor if ancestor != 0 or best_id == 0 else best_id
         species = Species(species_id=len(self._members) + 1, founder_genome=genome,
-                          birth_tick=tick, ancestor=ancestor)
+                          birth_tick=tick, ancestor=resolved)
         self._members.append(species)
         return species.species_id, True
