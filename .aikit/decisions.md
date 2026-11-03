@@ -355,6 +355,13 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
   before. 17 new tests (151 to 168) cover live fragments, JSON refusals, session resets, static
   assets, browser opening and launcher line endings.
 
+### ADR-015: First screenshot keeper is the seed-7 observatory; ui flag corrected
+- **Date**: 2026-11-03
+- **Status**: Accepted
+- **Context**: No screenshots existed and `media.json` said `has_ui:false/cli` although the live observatory is a documented first-class UI next to the terminal.
+- **Decision**: Correct `media.json` to `has_ui:true/web` and register `2026-11-03-observatory.png` (`python -m primordia web --seed 7 --ticks 500`, headless Edge 1440x900, commit `4b22927`) in `.aikit/media.json` and the README `aegean:screenshots` block. The text CLI stays README-documented.
+- **Consequences**: README proves the live world with stats, map, god mode, species, fossils and trends. Reproduce with the serve command plus headless `--screenshot`.
+
 ## Licensing migration (v1.0.6-agpl)
 
 - New versions use the Aegean License 1.1 (AL-1.1); versions up to and including `v1.0.6-agpl` remain under GNU AGPL-3.0.

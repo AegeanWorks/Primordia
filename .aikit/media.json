@@ -2,8 +2,8 @@
   "schema": 1,
   "name": "primordia",
   "repo": "Primordia",
-  "has_ui": false,
-  "ui_kind": "cli",
+  "has_ui": true,
+  "ui_kind": "web",
   "palette": [
     "#0d0a16",
     "#221638",
@@ -42,6 +42,26 @@
       }
     }
   },
-  "screenshots": [],
+  "screenshots": [
+    {
+      "path": "assets/screenshots/2026-11-03-observatory.png",
+      "alt": "Primordia observatory at 2026-11-03",
+      "caption": "Seed-7 world at tick 500 from python -m primordia web: 108 population, 3 species, speciation fossils, god mode, trends.",
+      "commit": "4b22927ffba58e614a6956fa67b7a5f3d241d75c",
+      "taken_at": "2026-11-03",
+      "viewport": "1440x900",
+      "width": 1440,
+      "height": 900,
+      "status": "approved",
+      "review": {
+        "status": "approved",
+        "reviewer": "agent:kilo",
+        "method": "vision",
+        "notes": "Real headless-Edge capture of the live world: stats, mean traits, tile map, god-mode events, species table, fossil record and trend chart all legible.",
+        "score": 94,
+        "reviewed_at": "2026-11-03"
+      }
+    }
+  ],
   "model": "community/scriptsnsenses-sys/flux-2-dev-free"
 }

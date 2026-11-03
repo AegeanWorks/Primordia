@@ -264,3 +264,11 @@ custom-threshold round trips, typed shock inputs, refused snapshot dates and a p
 ## 📜 License
 
 Free for personal use under the Aegean License 1.1 (AL-1.1); see [LICENSE](LICENSE). Any commercial use needs the Aegean Commercial License 1.0 (ACL-1.0); see [COMMERCIAL.md](COMMERCIAL.md).
+
+<!-- aegean:screenshots:start -->
+## Screenshots
+
+<a href="https://github.com/AegeanWorks/Primordia/commit/4b22927"><img src="assets/screenshots/2026-11-03-observatory.png" alt="Primordia observatory at 2026-11-03"></a>
+
+*commit `4b22927` · 2026-11-03 · viewport 1440x900 · seed-7 tick-500 world; CLI stays text-documented (ADR-015)*
+<!-- aegean:screenshots:end -->
