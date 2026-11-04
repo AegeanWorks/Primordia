@@ -8,9 +8,9 @@
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `25`
 - **Total Classes**: `56`
-- **Total Top-Level Functions**: `89`
-- **Total Class Methods**: `240`
-- **Total Source Lines**: `4750`
+- **Total Top-Level Functions**: `90`
+- **Total Class Methods**: `242`
+- **Total Source Lines**: `4780`
 
 ---
 
@@ -48,7 +48,7 @@
 ### [`primordia/cli.py`](primordia/cli.py)
 > *The command line: run a biosphere, resume one, report on it, or step it interactively.*
 
-**Size**: `292` lines (`12087` bytes)
+**Size**: `303` lines (`12562` bytes)
 
 **Functions:**
 - `def main(argv, out, err, stdin)` - *Run one command; returns the exit code: 0 success, 1 failure, 2 usage.*
@@ -69,6 +69,7 @@
 - `def _print_species(engine, limit, out)`
 - `def _print_fossil(engine, limit, out)`
 - `def _count(words, default)`
+- `def _require_non_negative(name, value)` - *Refuse a negative count before it silently clamps to zero ticks or an empty world.*
 
 ---
 
@@ -317,7 +318,7 @@
 ### [`tests/test_cli.py`](tests/test_cli.py)
 > *Unit tests for the command line: run, resume, stats and the interactive shell.*
 
-**Size**: `149` lines (`6784` bytes)
+**Size**: `168` lines (`7698` bytes)
 
 **Classes:**
 - `class CliTests`
@@ -331,6 +332,8 @@
   - Method `.test_reports_survive_a_zero_speciation_threshold()`
   - Method `.test_missing_save_exits_one_with_why_and_fix()`
   - Method `.test_usage_errors_exit_two()`
+  - Method `.test_run_refuses_negative_ticks_and_founders()`
+  - Method `.test_resume_and_web_refuse_negative_ticks()`
   - Method `.test_an_impossible_world_exits_two_with_a_fix()`
   - Method `.test_version_flag_prints_the_version()`
   - Method `.test_repl_steps_stats_hashes_saves_and_quits()`

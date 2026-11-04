@@ -369,6 +369,13 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Decision**: Wave 0 surveyed the oldest 10, wave 10 verified disc geometry, neighbour liveness and filesystem refusals, wave 20 analyzed the full-state hash, blocked steps and snapshot verification. Two findings were reproduced and repaired failing-first: (1) `SpeciesRegistry.classify` with the default ancestor now resolves to the nearest lineage and `Engine.spawn` records that ancestor in the fossil event instead of 0; (2) a hunter that spends its last energy still lands its strike, feeds on a kill, and is otherwise removed from the neighbour hash at once, with post-action death checks in `_tick_creature` so later creatures in the same tick never observe a dead hunter.
 - **Consequences**: 3 new tests bring the suite from 168 to 171; save format version 1 and determinism for valid states are unchanged, while fixed-seed histories that hit a suicidal strike or a spawned speciation now follow the corrected lineage.
 
+### ADR-017: CLI refuses negative ticks and founders instead of silently clamping
+- **Date**: 2026-11-04
+- **Status**: Accepted
+- **Context**: `run --ticks -5` and `resume --ticks -5` exited 0 and re-saved an unchanged world, and `run --founders -3` exited 0 with an empty world, because `_advance` clamped with `max(0, ticks)` and `Engine._found` returns early on non-positive founders. The web query path already answers a negative `step` with 400, and the REPL already refuses negative counts, so the flags disagreed with both.
+- **Decision**: Validate before touching the world: `_require_non_negative("ticks", ...)` in `_run`, `_resume`, `_web` (before any load or fresh `Engine`) and `_founders` in `_run`, plus a belt-and-braces check inside `_advance`. A negative value raises `ValueError`, which `main` already maps to exit 2 with a `Fix:` line. Zero stays legal, preserving the empty-world resilience the engine and save tests rely on. Also reverted an `aikit.py fix` side effect that rewrote `project.json` to `has_ui:false/cli`; ADR-015 (`true/web`) stands.
+- **Consequences**: 2 new tests bring the suite from 171 to 173; `run/resume/web --ticks -N` and `run --founders -N` exit 2 with `Fix:` and never touch a save. Valid histories, the save format and determinism are unchanged.
+
 ## Licensing migration (v1.0.6-agpl)
 
 - New versions use the Aegean License 1.1 (AL-1.1); versions up to and including `v1.0.6-agpl` remain under GNU AGPL-3.0.

@@ -101,6 +101,8 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _run(args: argparse.Namespace, out: TextIO) -> int:
+    _require_non_negative("ticks", args.ticks)
+    _require_non_negative("founders", args.founders)
     config = WorldConfig(width=args.width, height=args.height)
     engine = Engine(config=config, seed=args.seed, founders=args.founders)
     _advance(engine, args.ticks)
@@ -112,6 +114,7 @@ def _run(args: argparse.Namespace, out: TextIO) -> int:
 
 
 def _resume(args: argparse.Namespace, out: TextIO) -> int:
+    _require_non_negative("ticks", args.ticks)
     engine = load_from(args.path)
     _advance(engine, args.ticks)
     _report(engine, out)
@@ -129,6 +132,7 @@ def _stats(args: argparse.Namespace, out: TextIO) -> int:
 def _web(args: argparse.Namespace, out: TextIO) -> int:
     from primordia.web import serve
 
+    _require_non_negative("ticks", args.ticks)
     engine = load_from(args.path) if args.path else Engine(seed=args.seed)
     start_hash = engine.snapshot_hash()
     _advance(engine, args.ticks)
@@ -196,6 +200,7 @@ def _repl(args: argparse.Namespace, out: TextIO, stdin: TextIO) -> int:
 
 
 def _advance(engine: Engine, ticks: int) -> None:
+    _require_non_negative("ticks", ticks)
     for _ in range(max(0, ticks)):
         engine.step()
 
@@ -290,3 +295,9 @@ def _count(words: List[str], default: int) -> Optional[int]:
     except ValueError:
         return None
     return value if value >= 0 else None
+
+
+def _require_non_negative(name: str, value: int) -> None:
+    """Refuse a negative count before it silently clamps to zero ticks or an empty world."""
+    if value < 0:
+        raise ValueError(f"{name} must be at least 0, got {value}")

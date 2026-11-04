@@ -80,6 +80,25 @@ class CliTests(unittest.TestCase):
         code, out, err = self.run_cli(["run", "--ticks", "many"])
         self.assertEqual(code, 2)
 
+    def test_run_refuses_negative_ticks_and_founders(self):
+        for argv in (["run", "--ticks", "-5"],
+                     ["run", "--founders", "-3"],
+                     ["run", "--ticks", "-1", "--founders", "-1"]):
+            code, out, err = self.run_cli(argv)
+            self.assertEqual(code, 2, argv)
+            self.assertIn("Fix:", err)
+
+    def test_resume_and_web_refuse_negative_ticks(self):
+        self.run_cli(["run", "--seed", "5", "--ticks", "5", "--save", self.path])
+        code, out, err = self.run_cli(["resume", self.path, "--ticks", "-5"])
+        self.assertEqual(code, 2)
+        self.assertIn("Fix:", err)
+        with mock.patch("primordia.web.serve", return_value=0) as serve_mock:
+            code, out, err = self.run_cli(["web", self.path, "--ticks", "-5"])
+        self.assertEqual(code, 2)
+        self.assertIn("Fix:", err)
+        self.assertFalse(serve_mock.called)
+
     def test_an_impossible_world_exits_two_with_a_fix(self):
         code, out, err = self.run_cli(["run", "--width", "0", "--ticks", "1"])
         self.assertEqual(code, 2)
