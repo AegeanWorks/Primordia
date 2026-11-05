@@ -5,7 +5,7 @@
     "last_phase": "phase 4",
     "active_phase": 4,
     "status": "in_progress",
-    "updated_at": 1793723565.2257764,
+    "updated_at": 1793915604.5268922,
     "owner": "kilo:audit",
     "started_by": "unidentified",
     "continuations": [
@@ -253,6 +253,17 @@
       "status": "in_progress",
       "timestamp": 1793723565.2257764,
       "timestamp_str": "2026-11-03 19:32:45",
+      "agent": "kilo:audit"
+    },
+    {
+      "task_id": "task-primordia-audit-waves",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/4] Verify-last-3 wave: web /new in-place swap, ancestor validation, zero-threshold near=0, port range exit 2, whole-int hardening, REPL save-error survival; 6 failing-first tests added (173->179); ADR-018 appended; README 179; checklists: passed (test, hygiene, guidelines, secrets 4/4)",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1793915604.5268922,
+      "timestamp_str": "2026-11-06 00:53:24",
       "agent": "kilo:audit"
     }
   ]

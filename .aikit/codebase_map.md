@@ -9,8 +9,8 @@
 - **Total Python Modules**: `25`
 - **Total Classes**: `56`
 - **Total Top-Level Functions**: `90`
-- **Total Class Methods**: `242`
-- **Total Source Lines**: `4780`
+- **Total Class Methods**: `248`
+- **Total Source Lines**: `4857`
 
 ---
 
@@ -33,7 +33,7 @@
 ### [`primordia/analytics.py`](primordia/analytics.py)
 > *Small pure statistics over a population: counts by species, mean gene values and drift.*
 
-**Size**: `82` lines (`3217` bytes)
+**Size**: `84` lines (`3322` bytes)
 
 **Classes:**
 - `class SpeciesMetrics` - *One living lineage's spread: drift from its founder, and who is in it.*
@@ -48,7 +48,7 @@
 ### [`primordia/cli.py`](primordia/cli.py)
 > *The command line: run a biosphere, resume one, report on it, or step it interactively.*
 
-**Size**: `303` lines (`12562` bytes)
+**Size**: `311` lines (`12996` bytes)
 
 **Functions:**
 - `def main(argv, out, err, stdin)` - *Run one command; returns the exit code: 0 success, 1 failure, 2 usage.*
@@ -212,7 +212,7 @@
 ### [`primordia/species.py`](primordia/species.py)
 > *Phenetic species: genomes cluster by distance to a founding representative.*
 
-**Size**: `65` lines (`2506` bytes)
+**Size**: `68` lines (`2735` bytes)
 
 **Classes:**
 - `class Species` - *A named lineage: who founded it, when, and from which species it split.*
@@ -228,7 +228,7 @@
 ### [`primordia/web.py`](primordia/web.py)
 > *The observatory: a local web view of a running world, with god-mode interventions.*
 
-**Size**: `893` lines (`41400` bytes)
+**Size**: `898` lines (`41760` bytes)
 
 **Functions:**
 - `def state_payload(engine)` - *The observable facts of one world, as JSON-ready data.*
@@ -295,7 +295,7 @@
 ### [`tests/test_analytics.py`](tests/test_analytics.py)
 > *Unit tests for the population statistics helpers.*
 
-**Size**: `88` lines (`4258` bytes)
+**Size**: `97` lines (`4706` bytes)
 
 **Classes:**
 - `class AnalyticsTests`
@@ -307,6 +307,7 @@
   - Method `.test_an_empty_population_has_no_metrics()`
   - Method `.test_diet_split_and_mean_age_describe_one_lineage()`
   - Method `.test_near_speciation_counts_creatures_close_to_the_threshold()`
+  - Method `.test_zero_threshold_reports_no_near_speciation()`
 
 **Functions:**
 - `def flat_genome(value)`
@@ -318,7 +319,7 @@
 ### [`tests/test_cli.py`](tests/test_cli.py)
 > *Unit tests for the command line: run, resume, stats and the interactive shell.*
 
-**Size**: `168` lines (`7698` bytes)
+**Size**: `189` lines (`8633` bytes)
 
 **Classes:**
 - `class CliTests`
@@ -334,6 +335,8 @@
   - Method `.test_usage_errors_exit_two()`
   - Method `.test_run_refuses_negative_ticks_and_founders()`
   - Method `.test_resume_and_web_refuse_negative_ticks()`
+  - Method `.test_web_refuses_ports_outside_the_valid_range()`
+  - Method `.test_require_non_negative_refuses_bools_and_non_ints()`
   - Method `.test_an_impossible_world_exits_two_with_a_fix()`
   - Method `.test_version_flag_prints_the_version()`
   - Method `.test_repl_steps_stats_hashes_saves_and_quits()`
@@ -344,6 +347,7 @@
   - Method `.test_a_web_pre_roll_is_persisted_when_the_observatory_exits()`
   - Method `.test_a_bare_web_view_leaves_the_save_untouched()`
   - Method `.test_web_open_flag_reaches_the_observatory()`
+  - Method `.test_repl_save_error_stays_in_the_shell()`
 
 ---
 
@@ -514,7 +518,7 @@
 ### [`tests/test_species.py`](tests/test_species.py)
 > *Unit tests for the species registry: phenetic clustering around founding genomes.*
 
-**Size**: `58` lines (`2441` bytes)
+**Size**: `68` lines (`2902` bytes)
 
 **Classes:**
 - `class RegistryTests`
@@ -524,6 +528,7 @@
   - Method `.test_representative_is_the_founding_genome()`
   - Method `.test_ids_are_monotonic_and_unique()`
   - Method `.test_default_ancestor_resolves_to_the_nearest_species()`
+  - Method `.test_impossible_ancestors_are_refused_before_they_corrupt_the_tree()`
 
 **Functions:**
 - `def centered(**traits)`
@@ -533,7 +538,7 @@
 ### [`tests/test_web.py`](tests/test_web.py)
 > *Unit tests for the observatory: state payload, dashboard, god-mode shocks and the server.*
 
-**Size**: `642` lines (`28351` bytes)
+**Size**: `661` lines (`29345` bytes)
 
 **Classes:**
 - `class PayloadTests`
@@ -602,6 +607,7 @@
   - Method `.test_new_world_resets_the_session_and_its_history()`
   - Method `.test_new_world_refuses_out_of_bounds_fields_as_json()`
   - Method `.test_a_plain_form_new_world_redirects_to_the_playing_page()`
+  - Method `.test_new_world_swaps_in_place_so_a_save_path_still_sees_it()`
 - `class JsonShockTests`
   - Method `.setUp()`
   - Method `.test_a_ui_shock_returns_a_json_notice_and_mutates_the_world()`

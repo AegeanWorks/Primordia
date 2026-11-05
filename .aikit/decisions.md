@@ -376,6 +376,13 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Decision**: Validate before touching the world: `_require_non_negative("ticks", ...)` in `_run`, `_resume`, `_web` (before any load or fresh `Engine`) and `_founders` in `_run`, plus a belt-and-braces check inside `_advance`. A negative value raises `ValueError`, which `main` already maps to exit 2 with a `Fix:` line. Zero stays legal, preserving the empty-world resilience the engine and save tests rely on. Also reverted an `aikit.py fix` side effect that rewrote `project.json` to `has_ui:false/cli`; ADR-015 (`true/web`) stands.
 - **Consequences**: 2 new tests bring the suite from 171 to 173; `run/resume/web --ticks -N` and `run --founders -N` exit 2 with `Fix:` and never touch a save. Valid histories, the save format and determinism are unchanged.
 
+### ADR-018: Verify-last-3 audit wave — web new-world persistence, registry and CLI hardening
+- **Date**: 2026-11-06
+- **Status**: Accepted
+- **Context**: Review of the last 3 pushes (`c819dda` wave-30 ancestor/hunter, `ab78d06` negative-count refusal, `87d124e` README tally) found 6 residual gaps: (1) `web /new` replaced the session object so `cli._web` exit-time save kept the old world and lost the new one; (2) `SpeciesRegistry.classify` accepted impossible ancestors that later fail save verification; (3) `species_metrics` counted every creature as near-threshold when `distance == 0`; (4) `cli web --port` out-of-range fell through to `SaveError`/exit 1 instead of usage/exit 2; (5) `_require_non_negative` accepted bools/non-ints; (6) REPL `save` on a folder aborted the shell via uncaught `SaveError`.
+- **Decision**: Swap the fresh world in place (`__dict__` clear/update, history slice) so the save-path reference still sees `/new`; validate `0 <= ancestor < new_id` (rejecting bools) in `classify`; return `near_speciation 0` when the threshold is non-positive; validate `0 <= port <= 65535` in `_web` before serving; harden `_require_non_negative` to whole ints and drop the dead `max(0, ticks)` clamp; catch `SaveError` inside the REPL `save` command and stay in the shell. Also reverted an `aikit.py fix` UI rewrite to `has_ui:false/cli`; ADR-015 (`true/web`) stands.
+- **Consequences**: 6 new tests bring the suite from 173 to 179; save format version 1 and determinism for valid states are unchanged, `/new` worlds now persist via the existing exit-time save, and all CLI usage errors exit 2 with `Fix:`.
+
 ## Licensing migration (v1.0.6-agpl)
 
 - New versions use the Aegean License 1.1 (AL-1.1); versions up to and including `v1.0.6-agpl` remain under GNU AGPL-3.0.

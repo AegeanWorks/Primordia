@@ -86,3 +86,12 @@ class SpeciesMetricsTests(unittest.TestCase):
         self.assertEqual(row.near_speciation, 1)
         self.assertAlmostEqual(row.max_drift, 0.15)
         self.assertAlmostEqual(row.mean_drift, (0.0 + 0.15 + 0.05) / 3)
+
+    def test_zero_threshold_reports_no_near_speciation(self):
+        engine = Engine(config=WorldConfig(width=8, height=5), seed=0, founders=0)
+        (x1, y1), (x2, y2) = land_tiles(engine, 2)
+        engine.spawn(flat_genome(0.5), x1, y1)
+        engine.spawn(flat_genome(0.65), x2, y2)
+        engine.registry.distance = 0.0
+        row = species_metrics(engine.creatures, engine.registry)[1]
+        self.assertEqual(row.near_speciation, 0)

@@ -56,3 +56,13 @@ class RegistryTests(unittest.TestCase):
         self.assertTrue(is_new)
         self.assertEqual(species_id, 2)
         self.assertEqual(registry.get(2).ancestor, 1)
+
+    def test_impossible_ancestors_are_refused_before_they_corrupt_the_tree(self):
+        registry = SpeciesRegistry()
+        registry.classify(centered(), tick=0)
+        far = Genome(genes=tuple(0.8 for _ in GENES))
+        for bad in (999, -1, True):
+            with self.subTest(ancestor=bad):
+                with self.assertRaises(ValueError):
+                    registry.classify(far, tick=7, ancestor=bad)
+        self.assertEqual(len(registry), 1)

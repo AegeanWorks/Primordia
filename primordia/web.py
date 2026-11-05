@@ -676,8 +676,13 @@ def make_handler(engine: Engine, lock: threading.Lock, quiet: bool = False,
                            " a width of 8-120 and a height of 6-80")
                 return
             with lock:
-                session["engine"] = fresh
-                session["history"][:] = [record_history_point(fresh)]
+                # Swap in place so a `cli._web` save-path reference still sees the new world;
+                # replacing the dict entry would orphan the original object and lose the
+                # `/new` world when the observatory exits with a save file.
+                current = session["engine"]
+                current.__dict__.clear()
+                current.__dict__.update(fresh.__dict__)
+                session["history"][:] = [record_history_point(current)]
             notice = (f"new world: seed {seed}, {founders} founders,"
                       f" {width}x{height}")
             if self._wants_json():

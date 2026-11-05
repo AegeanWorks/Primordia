@@ -608,6 +608,25 @@ class NewWorldTests(ObservatoryServerCase):
         self.assertIn('data-autoplay="1"', page)
         self.assertEqual(self._state()["tick"], 0)
 
+    def test_new_world_swaps_in_place_so_a_save_path_still_sees_it(self):
+        from primordia.save import save_to, load_from
+        from primordia.cli import _persist_session
+        import io
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            path = str(Path(tmp) / "run.json")
+            save_to(self.engine, path)
+            before_hash = self.engine.snapshot_hash()
+            with self._post({"seed": "11", "founders": "7", "width": "20", "height": "9"}):
+                pass
+            # The original object is updated, so cli._persist_session would save the new world.
+            self.assertNotEqual(self.engine.snapshot_hash(), before_hash)
+            self.assertEqual(self.engine.tick, 0)
+            self.assertEqual(self.engine.config.width, 20)
+            self.assertTrue(_persist_session(self.engine, path, before_hash, io.StringIO()))
+            self.assertEqual(load_from(path).config.width, 20)
+
 
 class JsonShockTests(ObservatoryServerCase):
     def setUp(self):

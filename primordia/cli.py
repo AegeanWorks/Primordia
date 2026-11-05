@@ -133,6 +133,8 @@ def _web(args: argparse.Namespace, out: TextIO) -> int:
     from primordia.web import serve
 
     _require_non_negative("ticks", args.ticks)
+    if isinstance(args.port, bool) or not isinstance(args.port, int) or not 0 <= args.port <= 65535:
+        raise ValueError(f"port must be between 0 and 65535, got {args.port!r}")
     engine = load_from(args.path) if args.path else Engine(seed=args.seed)
     start_hash = engine.snapshot_hash()
     _advance(engine, args.ticks)
@@ -185,7 +187,11 @@ def _repl(args: argparse.Namespace, out: TextIO, stdin: TextIO) -> int:
             if not rest:
                 print("usage: save PATH", file=out)
                 continue
-            save_to(engine, rest[0])
+            try:
+                save_to(engine, rest[0])
+            except SaveError as error:
+                print(error, file=out)
+                continue
             print(f"saved {rest[0]}", file=out)
         elif command == "species" or command == "fossil":
             count = _count(rest, 10)
@@ -201,7 +207,7 @@ def _repl(args: argparse.Namespace, out: TextIO, stdin: TextIO) -> int:
 
 def _advance(engine: Engine, ticks: int) -> None:
     _require_non_negative("ticks", ticks)
-    for _ in range(max(0, ticks)):
+    for _ in range(ticks):
         engine.step()
 
 
@@ -299,5 +305,7 @@ def _count(words: List[str], default: int) -> Optional[int]:
 
 def _require_non_negative(name: str, value: int) -> None:
     """Refuse a negative count before it silently clamps to zero ticks or an empty world."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{name} must be a whole number, got {value!r}")
     if value < 0:
         raise ValueError(f"{name} must be at least 0, got {value}")

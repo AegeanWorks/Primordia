@@ -59,7 +59,10 @@ class SpeciesRegistry:
         if best_id != 0 and best_distance <= self.distance:
             return best_id, False
         resolved = ancestor if ancestor != 0 or best_id == 0 else best_id
-        species = Species(species_id=len(self._members) + 1, founder_genome=genome,
+        new_id = len(self._members) + 1
+        if not isinstance(resolved, int) or isinstance(resolved, bool) or not 0 <= resolved < new_id:
+            raise ValueError(f"ancestor must be 0 or a live species below {new_id}, got {resolved!r}")
+        species = Species(species_id=new_id, founder_genome=genome,
                           birth_tick=tick, ancestor=resolved)
         self._members.append(species)
         return species.species_id, True

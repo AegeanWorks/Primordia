@@ -99,6 +99,20 @@ class CliTests(unittest.TestCase):
         self.assertIn("Fix:", err)
         self.assertFalse(serve_mock.called)
 
+    def test_web_refuses_ports_outside_the_valid_range(self):
+        for bad in ("-1", "70000"):
+            code, out, err = self.run_cli(["web", "--port", bad])
+            self.assertEqual(code, 2, bad)
+            self.assertIn("Fix:", err)
+
+    def test_require_non_negative_refuses_bools_and_non_ints(self):
+        from primordia.cli import _require_non_negative
+        for bad in (True, False, 1.5, "3", None):
+            with self.subTest(value=bad):
+                with self.assertRaises(ValueError):
+                    _require_non_negative("ticks", bad)
+        _require_non_negative("ticks", 0)
+
     def test_an_impossible_world_exits_two_with_a_fix(self):
         code, out, err = self.run_cli(["run", "--width", "0", "--ticks", "1"])
         self.assertEqual(code, 2)
@@ -166,3 +180,10 @@ class CliTests(unittest.TestCase):
             code, out, err = self.run_cli(["web", "--open", "--port", "0"])
         self.assertEqual(code, 0, err)
         self.assertTrue(serve_mock.call_args.kwargs["open_browser"])
+
+    def test_repl_save_error_stays_in_the_shell(self):
+        code, out, err = self.run_cli(["repl", "--seed", "5"],
+                                      stdin="save {}\nstats\nquit\n".format(self.temp.name))
+        self.assertEqual(code, 0, err)
+        self.assertIn("Why:", out)
+        self.assertIn("tick", out)

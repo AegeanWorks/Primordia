@@ -64,6 +64,7 @@ def species_metrics(creatures: Sequence[Creature],
             members.setdefault(creature.species, []).append(creature)
     metrics: Dict[int, SpeciesMetrics] = {}
     near_threshold = registry.distance * NEAR_SPECIATION_FRACTION
+    no_positive_threshold = not registry.distance > 0.0
     for species_id, group in members.items():
         founder = registry.get(species_id).founder_genome
         drifts = [genetic_distance(creature.genome, founder) for creature in group]
@@ -72,7 +73,8 @@ def species_metrics(creatures: Sequence[Creature],
             alive=len(group),
             mean_drift=sum(drifts) / len(drifts),
             max_drift=max(drifts),
-            near_speciation=sum(1 for drift in drifts if drift >= near_threshold),
+            near_speciation=0 if no_positive_threshold else sum(
+                1 for drift in drifts if drift >= near_threshold),
             herbivores=sum(1 for creature in group
                            if creature.genome.trait("diet") < DIET_SPLIT),
             carnivores=sum(1 for creature in group
